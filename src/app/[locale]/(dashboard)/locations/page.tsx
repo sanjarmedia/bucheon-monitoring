@@ -79,7 +79,7 @@ export default async function LocationsPage() {
           </Card>
         )}
 
-        <Accordion className="w-full space-y-4" type="multiple">
+        <Accordion className="w-full space-y-4" multiple>
           {branches.map(branch => (
             <AccordionItem key={branch.id} value={branch.id} className="border rounded-lg bg-card px-4">
               <div className="flex items-center justify-between">
@@ -114,7 +114,7 @@ export default async function LocationsPage() {
                 {branch.buildings.length === 0 ? (
                   <p className="text-muted-foreground text-sm italic pl-7">{t('noBuildings')}</p>
                 ) : (
-                  <Accordion className="w-full space-y-3 pl-7" type="multiple">
+                  <Accordion className="w-full space-y-3 pl-7" multiple>
                     {branch.buildings.map(building => (
                       <AccordionItem key={building.id} value={building.id} className="border rounded-md bg-muted/30 px-3">
                         <div className="flex items-center justify-between">
