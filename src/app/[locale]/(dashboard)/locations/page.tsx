@@ -34,11 +34,20 @@ import {
 } from "@/lib/actions/locations"
 
 export default async function LocationsPage() {
-  const branches = await LocationService.getFullLocationTree()
-  const users = await prisma.user.findMany({
-    select: { id: true, fullName: true, role: true },
-    orderBy: { fullName: 'asc' }
-  })
+  let branches: any[] = []
+  let users: any[] = []
+  
+  try {
+    [branches, users] = await Promise.all([
+      LocationService.getFullLocationTree(),
+      prisma.user.findMany({
+        select: { id: true, fullName: true, role: true },
+        orderBy: { fullName: 'asc' }
+      })
+    ])
+  } catch (error) {
+    console.error("Locations data error:", error)
+  }
   const t = await getTranslations('Locations')
   const common = await getTranslations('Common')
   const inventory = await getTranslations('Inventory')

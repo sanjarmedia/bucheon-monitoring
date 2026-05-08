@@ -12,7 +12,12 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   const session = await auth()
-  const branches = await LocationService.getFullLocationTree()
+  let branches: any[] = []
+  try {
+    branches = await LocationService.getFullLocationTree()
+  } catch (error) {
+    console.error("Layout location tree error:", error)
+  }
   const cookieStore = await cookies()
   const selectedBranchId = cookieStore.get("selected_branch")?.value || "ALL"
 

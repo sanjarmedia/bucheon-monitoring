@@ -7,13 +7,19 @@ export default async function DashboardPage() {
   const t = await getTranslations('Index')
   const sidebar = await getTranslations('Sidebar')
   
-  const [totalItems, activeEmployees, openTickets, itemsInRepair, totalBranches] = await Promise.all([
-    prisma.inventoryItem.count(),
-    prisma.user.count({ where: { NOT: { role: 'SUPER_ADMIN' } } }),
-    prisma.ticket.count({ where: { status: { in: ['NEW', 'IN_PROGRESS'] } } }),
-    prisma.inventoryItem.count({ where: { status: 'IN_REPAIR' } }),
-    prisma.branch.count()
-  ])
+  let totalItems = 0, activeEmployees = 0, openTickets = 0, itemsInRepair = 0, totalBranches = 0;
+  
+  try {
+    [totalItems, activeEmployees, openTickets, itemsInRepair, totalBranches] = await Promise.all([
+      prisma.inventoryItem.count(),
+      prisma.user.count({ where: { NOT: { role: 'SUPER_ADMIN' } } }),
+      prisma.ticket.count({ where: { status: { in: ['NEW', 'IN_PROGRESS'] } } }),
+      prisma.inventoryItem.count({ where: { status: 'IN_REPAIR' } }),
+      prisma.branch.count()
+    ])
+  } catch (error) {
+    console.error("Dashboard stats error:", error)
+  }
 
   const stats = [
     { title: t('total_items'), value: totalItems.toString(), icon: Package, description: "All hardware items" },
