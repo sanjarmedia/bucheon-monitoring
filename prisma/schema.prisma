@@ -1,0 +1,253 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String  @id @default(cuid())
+  fullName    String
+  email       String  @unique
+  password    String?
+  role        String  @default("EMPLOYEE") // SUPER_ADMIN, DIRECTOR, TECHNICIAN, RECEIVER, EMPLOYEE
+  position    String?
+  department  String?
+  contactInfo String?
+
+  // Tree Structure (Manager -> Subordinates)
+  managerId    String?
+  manager      User?   @relation("UserToManager", fields: [managerId], references: [id])
+  subordinates User[]  @relation("UserToManager")
+
+  // Location assignment
+  roomId String?
+  room   Room?   @relation("UserRoom", fields: [roomId], references: [id])
+
+  responsibleForRooms Room[] @relation("RoomResponsible")
+
+  // Inventory and tickets
+  inventoryItems  InventoryItem[] @relation("AssignedEmployee")
+  createdTickets  Ticket[]        @relation("TicketCreator")
+  assignedTickets Ticket[]        @relation("TicketTechnician")
+
+  attendanceLogs  AttendanceLog[]   @relation("UserAttendanceLogs")
+  dailyAttendance DailyAttendance[] @relation("UserDailyAttendance")
+  leaveRequests   LeaveRequest[]    @relation("UserLeaveRequests")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Branch {
+  id         String      @id @default(cuid())
+  name       String // e.g. "Chilonzor Branch"
+  buildings  Building[]
+  turnstiles Turnstile[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model Building {
+  id        String   @id @default(cuid())
+  name      String // e.g. "Building A"
+  branchId  String
+  branch    Branch   @relation(fields: [branchId], references: [id])
+  floors    Floor[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Floor {
+  id         String   @id @default(cuid())
+  number     Int // e.g. 1, 2, 3
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id])
+  rooms      Room[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Room {
+  id      String  @id @default(cuid())
+  number  String // e.g. "101", "Lab-2"
+  faculty String? // e.g. "Bucheon Lyceum", department/kafedra
+  floorId String
+  floor   Floor   @relation(fields: [floorId], references: [id])
+
+  responsibleId    String?
+  responsible      User?   @relation("RoomResponsible", fields: [responsibleId], references: [id])
+  responsibleSince DateTime? // Javobgar qachondan
+
+  inventory  InventoryItem[]
+  assignedTo User[]          @relation("UserRoom")
+  tickets    Ticket[]        @relation("RoomTickets")
+  history    RoomHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RoomHistory {
+  id     String @id @default(cuid())
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id])
+
+  action      String // CREATED, RESPONSIBLE_CHANGED, INVENTORY_ADDED, INVENTORY_REMOVED, FACULTY_CHANGED
+  description String?
+  performedBy String? // user name or ID
+
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id        String          @id @default(cuid())
+  name      String // e.g. "Printer", "Projector"
+  items     InventoryItem[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model InventoryItem {
+  id              String    @id @default(cuid())
+  name            String
+  imageUrl        String?
+  inventoryNumber String?   @unique
+  serialNumber    String?   @unique
+  barcode         String?   @unique
+  status          String    @default("ACTIVE") // ACTIVE, IN_REPAIR, WRITTEN_OFF
+  purchaseDate    DateTime?
+  supplier        String?
+  cost            Float?
+  warrantyInfo    String?
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  // Location (can be null if unassigned or in transit)
+  roomId String?
+  room   Room?   @relation(fields: [roomId], references: [id])
+
+  // Responsible employee
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedEmployee", fields: [assignedToId], references: [id])
+
+  history   InventoryHistory[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+model InventoryHistory {
+  id     String        @id @default(cuid())
+  itemId String
+  item   InventoryItem @relation(fields: [itemId], references: [id])
+
+  action      String // e.g. "CREATED", "TRANSFERRED", "STATUS_CHANGED"
+  description String?
+
+  // Location changes
+  fromRoomId String?
+  toRoomId   String?
+
+  // Assignment changes
+  fromEmployeeId String?
+  toEmployeeId   String?
+
+  // Status changes
+  previousStatus String?
+  newStatus      String?
+
+  // Who made the change
+  performedById String
+
+  createdAt DateTime @default(now())
+}
+
+model Ticket {
+  id          String  @id @default(cuid())
+  category    String // PRINTER_ISSUE, PROJECTOR_ISSUE, NETWORK_ISSUE, OTHER
+  status      String  @default("NEW") // NEW, IN_PROGRESS, COMPLETED, REJECTED
+  priority    String  @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  description String
+  attachments String? // comma separated URLs or JSON string
+  resolutionComment String?
+
+
+  createdById String
+  createdBy   User   @relation("TicketCreator", fields: [createdById], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation("TicketTechnician", fields: [assignedToId], references: [id])
+
+  roomId String?
+  room   Room?   @relation("RoomTickets", fields: [roomId], references: [id])
+
+  history   TicketHistory[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model TicketHistory {
+  id       String @id @default(cuid())
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+
+  action         String // "CREATED", "STATUS_CHANGED", "ASSIGNED"
+  previousStatus String?
+  newStatus      String?
+
+  performedById String
+
+  createdAt DateTime @default(now())
+}
+
+// ----------------------------------------------------
+// HR & ATTENDANCE MODULE
+// ----------------------------------------------------
+
+model Turnstile {
+  id        String          @id @default(cuid())
+  name      String // e.g. "Main Entrance FaceID 1"
+  type      String // "IN" or "OUT"
+  ipAddress String?
+  branchId  String
+  branch    Branch          @relation(fields: [branchId], references: [id])
+  logs      AttendanceLog[]
+}
+
+model AttendanceLog {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation("UserAttendanceLogs", fields: [userId], references: [id])
+  turnstileId String
+  turnstile   Turnstile @relation(fields: [turnstileId], references: [id])
+  timestamp   DateTime  @default(now())
+  type        String // "IN" or "OUT"
+}
+
+model DailyAttendance {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation("UserDailyAttendance", fields: [userId], references: [id])
+  date             DateTime // Should store just the day part, e.g. 2026-05-06T00:00:00.000Z
+  firstIn          DateTime?
+  lastOut          DateTime?
+  totalWorkMinutes Int       @default(0)
+  status           String    @default("PRESENT") // PRESENT, LATE, ABSENT, SICK, VACATION, DAY_OFF
+  notes            String?
+
+  @@unique([userId, date])
+}
+
+model LeaveRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("UserLeaveRequests", fields: [userId], references: [id])
+  type      String // SICK, VACATION, DAY_OFF
+  startDate DateTime
+  endDate   DateTime
+  status    String   @default("APPROVED") // PENDING, APPROVED, REJECTED
+  createdAt DateTime @default(now())
+}
