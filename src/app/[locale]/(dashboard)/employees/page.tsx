@@ -10,6 +10,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { getTranslations } from "next-intl/server"
+import { PageHeader } from "@/components/shared/PageHeader"
+import { CreateEmployeeButton } from "@/components/shared/CreateEmployeeButton"
+import { Image as ImageIcon } from "lucide-react"
 
 export default async function EmployeesPage() {
   const t = await getTranslations('Employees')
@@ -38,10 +41,12 @@ export default async function EmployeesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
-        <p className="text-muted-foreground">{t('subtitle')}</p>
-      </div>
+      <PageHeader 
+        title={t('title')} 
+        description={t('subtitle')}
+      >
+        <CreateEmployeeButton />
+      </PageHeader>
 
       <Card>
         <CardHeader>
@@ -61,7 +66,19 @@ export default async function EmployeesPage() {
             <TableBody>
               {employees.map((emp) => (
                 <TableRow key={emp.id}>
-                  <TableCell className="font-medium">{emp.fullName}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      {emp.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={emp.imageUrl} alt={emp.fullName} className="w-10 h-10 rounded-full object-cover border-2 border-background shadow-sm" />
+                      ) : (
+                        <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center border-2 border-background shadow-sm">
+                          <ImageIcon className="h-5 w-5 text-muted-foreground/50" />
+                        </div>
+                      )}
+                      <span className="font-semibold">{emp.fullName}</span>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <Badge variant="outline">{emp.role.replace("_", " ")}</Badge>
                   </TableCell>

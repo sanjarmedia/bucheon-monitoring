@@ -14,6 +14,8 @@
     "employees": "Xodimlar",
     "locations": "Joylashuvlar",
     "attendance": "Davomat",
+    "profile": "Profil",
+    "settings": "Sozlamalar",
     "all": "Barchasi",
     "litsey": "Litsey",
     "texnikum": "Texnikum",
@@ -95,7 +97,7 @@
     "addBuilding": "Bino qo'shish",
     "addFloor": "Qavat qo'shish",
     "addRoom": "Xona qo'shish",
-    "roomNumber": "Xona raqami",
+    "roomNumber": "ta xona",
     "faculty": "Fakultet/Bo'lim",
     "floor": "Qavat",
     "building": "Bino",
@@ -115,7 +117,20 @@
     "bulkDesc": "Bu xonalarni boshlang'ich va yakuniy raqamlar oralig'ida ketma-ket yaratadi.",
     "floorLabel": "Fakultet / Izoh (Ixtiyoriy)",
     "assignInventory": "Jihoz biriktirish",
-    "manualAdd": "Qo'lda qo'shish"
+    "manualAdd": "Qo'lda qo'shish",
+    "outside": "Tashqi / Umumiy",
+    "categories": {
+      "pc": "Kompyuter va noutbuk",
+      "monitor": "Monitor va ekran",
+      "printer": "Printer va skaner",
+      "projector": "Proyektor",
+      "camera": "Kamera",
+      "audio": "Audio va video",
+      "network": "Tarmoq jihozi",
+      "server": "Server va UPS",
+      "accessory": "Aksesuar va kabel",
+      "other": "Boshqa texnika"
+    }
   },
   "Rooms": {
     "details": "Xona tafsilotlari",
@@ -164,7 +179,9 @@
     "subtitle": "Universitet xodimlari va ruxsat huquqlarini boshqarish.",
     "role": "Roli",
     "location": "Joylashuvi",
-    "manager": "Rahbari"
+    "manager": "Rahbari",
+    "addEmployee": "Xodim qo'shish",
+    "addSubtitle": "Yangi xodim ma'lumotlarini kiriting va rolini belgilang."
   },
   "Tickets": {
     "title": "Qo'llab-quvvatlash Tizimi",

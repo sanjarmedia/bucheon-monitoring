@@ -1,7 +1,7 @@
 "use client"
 import { Link, usePathname } from "@/i18n/routing"
 import { useTranslations } from "next-intl"
-import { LayoutDashboard, Package, Ticket, Users, MapPin, ChevronDown, ChevronRight, Circle } from "lucide-react"
+import { LayoutDashboard, Package, Ticket, Users, MapPin, ChevronDown, ChevronRight, Circle, Settings, User } from "lucide-react"
 import { useState } from "react"
 import { useSearchParams } from "next/navigation"
 
@@ -16,6 +16,8 @@ export function Sidebar() {
     { href: "/employees", key: "employees", icon: Users },
     { href: "/locations", key: "locations", icon: MapPin },
     { href: "/attendance", key: "attendance", icon: Users },
+    { href: "/profile", key: "profile", icon: User },
+    { href: "/settings", key: "settings", icon: Settings },
   ]
 
   const inventorySubmenu = [

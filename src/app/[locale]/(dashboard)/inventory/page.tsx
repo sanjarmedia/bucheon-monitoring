@@ -44,12 +44,13 @@ export default async function InventoryPage({
   const cookieStore = await cookies()
   const branchId = cookieStore.get("selected_branch")?.value || "ALL"
   const currentPage = parseInt(searchParams.page || "1", 10)
+  const itemsPerPage = parseInt(searchParams.perPage || "25", 10)
 
   const { items, total, totalPages, perPage } = await InventoryService.getItems({
     ...searchParams,
     branchId,
     page: currentPage,
-    perPage: 25,
+    perPage: itemsPerPage,
   })
 
   return (
@@ -191,6 +192,18 @@ export default async function InventoryPage({
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2 w-[100px]">
+              <Label>Limit</Label>
+              <Select name="perPage" defaultValue={String(perPage)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <Button type="submit" variant="secondary" className="gap-2">
               <Search className="h-4 w-4" /> {t('filterBtn')}
             </Button>
@@ -299,6 +312,7 @@ export default async function InventoryPage({
           if (searchParams.category) params.set("category", searchParams.category)
           if (searchParams.status) params.set("status", searchParams.status)
           if (searchParams.faculty) params.set("faculty", searchParams.faculty)
+          if (searchParams.perPage) params.set("perPage", searchParams.perPage)
           params.set("page", String(page))
           return `/inventory?${params.toString()}`
         }

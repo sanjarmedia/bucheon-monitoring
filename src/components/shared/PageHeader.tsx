@@ -13,6 +13,8 @@ interface PageHeaderProps {
   showBackButton?: boolean
 }
 
+import { RefreshButton } from "./RefreshButton"
+
 export function PageHeader({ title, description, children, className, showBackButton }: PageHeaderProps) {
   const router = useRouter()
   
@@ -29,8 +31,11 @@ export function PageHeader({ title, description, children, className, showBackBu
             <ArrowLeft className="h-5 w-5" />
           </Button>
         )}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+            <RefreshButton />
+          </div>
           {description && <p className="text-muted-foreground mt-1">{description}</p>}
         </div>
       </div>

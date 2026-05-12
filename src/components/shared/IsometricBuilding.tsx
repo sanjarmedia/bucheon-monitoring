@@ -162,7 +162,7 @@ export function IsometricBuilding({ building, categories = [] }: { building: Bui
                       fontWeight={isActive ? "bold" : "normal"}
                       style={{ pointerEvents: "none" }}
                     >
-                      {floor.number}-{t('floor')}{floor.rooms[0]?.faculty ? ` (${floor.rooms[0].faculty})` : ''} • {floor.rooms.length} {t('roomNumber')}
+                      {floor.number === 99 ? t('outside') : `${floor.number}-${t('floor')}`}{floor.rooms[0]?.faculty ? ` (${floor.rooms[0].faculty})` : ''} • {floor.rooms.length} {t('roomNumber')}
                     </text>
 
                     {/* Active indicator glow */}
@@ -193,7 +193,7 @@ export function IsometricBuilding({ building, categories = [] }: { building: Bui
                   }`}
                   style={{ background: color.base, color: color.text }}
                 >
-                  <Layers className="h-3 w-3" /> {floor.number}-{t('floor')}{floor.rooms[0]?.faculty ? ` (${floor.rooms[0].faculty})` : ''}
+                  <Layers className="h-3 w-3" /> {floor.number === 99 ? t('outside') : `${floor.number}-${t('floor')}`}{floor.rooms[0]?.faculty ? ` (${floor.rooms[0].faculty})` : ''}
                 </button>
               )
             })}
@@ -215,7 +215,7 @@ export function IsometricBuilding({ building, categories = [] }: { building: Bui
               >
                 <div className="flex items-center gap-2 text-white font-bold text-lg">
                   <Layers className="h-5 w-5" />
-                  {floors[activeFloor]?.number}-{t('floor')}
+                  {floors[activeFloor]?.number === 99 ? t('outside') : `${floors[activeFloor]?.number}-${t('floor')}`}
                   {floors[activeFloor]?.rooms[0]?.faculty && (
                     <span className="text-sm font-normal bg-white/20 px-2 py-0.5 rounded-full ml-2">
                       {floors[activeFloor]?.rooms[0]?.faculty}
@@ -270,19 +270,19 @@ export function IsometricBuilding({ building, categories = [] }: { building: Bui
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Cameras</span>
+                        <span className="text-muted-foreground">{t('categories.camera')}</span>
                         <span className="font-medium">
                            {floors[activeFloor]?.rooms.reduce((acc, r) => {
-                             const camCat = categories.find(c => c.name.toLowerCase().includes('камера') || c.name.toLowerCase().includes('camera'))
+                             const camCat = categories.find(c => c.name === 'camera')
                              return acc + (r.inventory?.filter(i => i.categoryId === camCat?.id).length || 0)
                            }, 0)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Network (WiFi/Router)</span>
+                        <span className="text-muted-foreground">{t('categories.network')}</span>
                         <span className="font-medium">
                            {floors[activeFloor]?.rooms.reduce((acc, r) => {
-                             const netCat = categories.find(c => c.name.toLowerCase().includes('сеть') || c.name.toLowerCase().includes('tarmoq') || c.name.toLowerCase().includes('network'))
+                             const netCat = categories.find(c => c.name === 'network')
                              return acc + (r.inventory?.filter(i => i.categoryId === netCat?.id).length || 0)
                            }, 0)}
                         </span>

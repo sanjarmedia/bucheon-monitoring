@@ -18,28 +18,36 @@ async function main() {
 
   console.log('Database cleared.')
 
-  // 2. Setup Categories
-  const categoryNames = [
-    'Kompyuter va noutbuk', 'Monitor va ekran', 'Printer va skaner',
-    'Proyektor', 'Kamera', 'Audio va video', 'Tarmoq jihozi',
-    'Server va UPS', 'Aksesuar va kabel', 'Boshqa texnika'
+  // 2. Setup Categories (using keys for multi-language)
+  const categories = [
+    { key: 'pc', name: 'pc' },
+    { key: 'monitor', name: 'monitor' },
+    { key: 'printer', name: 'printer' },
+    { key: 'projector', name: 'projector' },
+    { key: 'camera', name: 'camera' },
+    { key: 'audio', name: 'audio' },
+    { key: 'network', name: 'network' },
+    { key: 'server', name: 'server' },
+    { key: 'accessory', name: 'accessory' },
+    { key: 'other', name: 'other' }
   ]
   const categoryMap = {}
-  for (const name of categoryNames) {
-    const cat = await prisma.category.create({ data: { name } })
-    categoryMap[name] = cat.id
+  for (const cat of categories) {
+    const created = await prisma.category.create({ data: { name: cat.key } })
+    categoryMap[cat.key] = created.id
   }
 
   function guessCategory(name) {
     const n = (name || '').toLowerCase()
-    if (n.includes('ноутбук') || n.includes('laptop') || n.includes('notebook')) return 'Kompyuter va noutbuk'
-    if (n.includes('компьютер') || n.includes('computer') || n.includes('пк') || n.includes('системный')) return 'Kompyuter va noutbuk'
-    if (n.includes('монитор') || n.includes('monitor') || n.includes('экран')) return 'Monitor va ekran'
-    if (n.includes('принтер') || n.includes('printer') || n.includes('сканер') || n.includes('mfp') || n.includes('мфу')) return 'Printer va skaner'
-    if (n.includes('проектор') || n.includes('projector')) return 'Proyektor'
-    if (n.includes('камер') || n.includes('camera')) return 'Kamera'
-    if (n.includes('switch') || n.includes('router') || n.includes('wifi') || n.includes('wi-fi')) return 'Tarmoq jihozi'
-    return 'Boshqa texnika'
+    if (n.includes('ноутбук') || n.includes('laptop') || n.includes('notebook') || n.includes('компьютер') || n.includes('computer') || n.includes('пк') || n.includes('системный')) return 'pc'
+    if (n.includes('монитор') || n.includes('monitor') || n.includes('экран')) return 'monitor'
+    if (n.includes('принтер') || n.includes('printer') || n.includes('сканер') || n.includes('mfp') || n.includes('мфу')) return 'printer'
+    if (n.includes('проектор') || n.includes('projector')) return 'projector'
+    if (n.includes('камер') || n.includes('camera') || n.includes('hikvision')) return 'camera'
+    if (n.includes('switch') || n.includes('router') || n.includes('wifi') || n.includes('wi-fi') || n.includes('коммутатор')) return 'network'
+    if (n.includes('сервер') || n.includes('server') || n.includes('ups') || n.includes('ибп')) return 'server'
+    if (n.includes('кабел') || n.includes('hdmi') || n.includes('удлинитель')) return 'accessory'
+    return 'other'
   }
 
   // 3. Setup Branches & Buildings
@@ -54,7 +62,7 @@ async function main() {
   const roomCache = {}
 
   async function getRoom(branchName, locationStr) {
-    const loc = String(locationStr || '').trim()
+    let loc = String(locationStr || '').trim()
     if (!loc) return null
 
     let branchId = branchName === 'Chilonzor' ? chilBranch.id : itBranch.id
@@ -63,37 +71,54 @@ async function main() {
     let floorNum = 1
     let roomName = loc
 
-    // Logic for IT Campus
-    if (branchName === 'IT Campus') {
-      if (loc.match(/^[1-6][0-9][0-9]$/)) {
-        floorNum = parseInt(loc[0])
-      } else if (loc.includes('Ректорат') || loc.includes('ректор') || loc.includes('Приёмная')) {
-        floorNum = 6
-        roomName = 'Rektorat'
-      } else if (loc.toLowerCase().includes('библиотека') || loc.toLowerCase().includes('library')) {
-        floorNum = -1
-        roomName = 'Library'
-      } else if (loc.toLowerCase().includes('конф зал') || loc.toLowerCase().includes('conference')) {
-        floorNum = 2
-        roomName = 'Conference Hall'
-      }
-    } else {
-      // Logic for Chilonzor
-      if (loc.match(/^[1-4][0-9][0-9]$/)) {
-        floorNum = parseInt(loc[0])
-      } else if (loc.includes('Ректорат')) {
-        floorNum = 2
-        roomName = 'Rektorat'
-      } else if (loc.toLowerCase().includes('library') || loc.toLowerCase().includes('библиотека')) {
-        floorNum = 2
-        roomName = 'Library'
-      } else if (loc.toLowerCase().includes('актовый') || loc.toLowerCase().includes('conference')) {
-        floorNum = 3
-        roomName = 'Conference Hall'
-      } else if (loc.toLowerCase().includes('столовая') || loc.toLowerCase().includes('oshxona')) {
-        floorNum = 1
-        roomName = 'Canteen'
-      }
+    // 1. Clean room numbers from strings like "317(Rashidova I.)"
+    const roomMatch = loc.match(/([0-9]{3})/);
+    if (roomMatch) {
+      roomName = roomMatch[1];
+      floorNum = parseInt(roomName[0]);
+    }
+
+    // 2. Special aggressive grouping
+    const lowerLoc = loc.toLowerCase();
+    if (lowerLoc.includes('ректорат') || lowerLoc.includes('ректор') || lowerLoc.includes('приёмная')) {
+      roomName = 'Rektorat'
+      floorNum = branchName === 'IT Campus' ? 6 : 2;
+    } else if (lowerLoc.includes('библиотека') || lowerLoc.includes('library')) {
+      roomName = 'Library'
+      floorNum = branchName === 'IT Campus' ? -1 : 2;
+    } else if (lowerLoc.includes('конф зал') || lowerLoc.includes('conference') || lowerLoc.includes('актовый')) {
+      roomName = 'Conference Hall'
+      floorNum = branchName === 'IT Campus' ? 2 : 3;
+    } else if (lowerLoc.includes('столовая') || lowerLoc.includes('oshxona')) {
+      roomName = 'Canteen'
+      floorNum = 1
+    } else if (lowerLoc.includes('шахта')) {
+      roomName = 'Shaxta'
+      floorNum = -1
+    } else if (lowerLoc.includes('операторская') || lowerLoc.includes('operator')) {
+      roomName = 'Operator Room'
+      floorNum = 3
+    } else if (lowerLoc.includes('склад') || lowerLoc.includes('sklad') || lowerLoc.includes('warehouse')) {
+      roomName = 'Sklad'
+      floorNum = 3
+    } else if (lowerLoc.includes('multimedia')) {
+      roomName = 'Multimedia'
+      floorNum = 2
+    }
+
+    // 3. Special case for "Chilanzar" mentioned in IT Campus
+    if (lowerLoc.includes('чиланзар') || lowerLoc.includes('chilonzor')) {
+       branchId = chilBranch.id;
+       buildingId = chilBuildingA.id;
+    }
+
+    // 4. Non-floor items (Lift, Shlagbaum, Turniket, KPP, Outside)
+    if (lowerLoc.includes('лифт') || lowerLoc.includes('lift') || 
+        lowerLoc.includes('шлагбаум') || lowerLoc.includes('shlagbaum') || 
+        lowerLoc.includes('кпп') || lowerLoc.includes('turniket') ||
+        lowerLoc.includes('gate') || lowerLoc.includes('коридор') || lowerLoc.includes('corridor')) {
+      roomName = loc;
+      floorNum = 99; // Special "Outside/Common" floor
     }
 
     const floorKey = `${buildingId}_${floorNum}`
