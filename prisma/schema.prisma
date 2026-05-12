@@ -139,6 +139,13 @@ model InventoryItem {
   updatedAt DateTime           @updatedAt
 }
 
+model SystemSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String @db.Text
+  updatedAt DateTime @updatedAt
+}
+
 model InventoryHistory {
   id     String        @id @default(cuid())
   itemId String

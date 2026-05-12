@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Clock, UserCheck, UserX, CalendarClock } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 import { Link } from "@/i18n/routing"
+import { PageHeader } from "@/components/shared/PageHeader"
 
 export default async function AttendancePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
@@ -41,17 +42,14 @@ export default async function AttendancePage({ params }: { params: Promise<{ loc
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{side('attendance')}</h1>
-          <p className="text-muted-foreground">{t('title')}</p>
-        </div>
-        <div className="flex gap-2">
-           <Link href="/attendance/leaves">
-             <Button variant="outline">{t('leaves')}</Button>
-           </Link>
-        </div>
-      </div>
+      <PageHeader 
+        title={side('attendance')} 
+        description={t('title')}
+      >
+        <Link href="/attendance/leaves">
+          <Button variant="outline">{t('leaves')}</Button>
+        </Link>
+      </PageHeader>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
