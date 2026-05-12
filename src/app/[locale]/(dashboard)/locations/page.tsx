@@ -89,7 +89,7 @@ export default async function LocationsPage() {
         )}
 
         <Accordion className="w-full space-y-4" multiple>
-          {branches.map(branch => (
+          {branches.map((branch: any) => (
             <AccordionItem key={branch.id} value={branch.id} className="border rounded-lg bg-card px-4">
               <div className="flex items-center justify-between">
                 <AccordionTrigger className="hover:no-underline text-xl font-semibold flex-1">
@@ -124,7 +124,7 @@ export default async function LocationsPage() {
                   <p className="text-muted-foreground text-sm italic pl-7">{t('noBuildings')}</p>
                 ) : (
                   <Accordion className="w-full space-y-3 pl-7" multiple>
-                    {branch.buildings.map(building => (
+                    {branch.buildings.map((building: any) => (
                       <AccordionItem key={building.id} value={building.id} className="border rounded-md bg-muted/30 px-3">
                         <div className="flex items-center justify-between">
                           <AccordionTrigger className="hover:no-underline text-lg font-medium flex-1 py-3">
@@ -170,7 +170,7 @@ export default async function LocationsPage() {
                             <p className="text-muted-foreground text-sm italic pl-6">{t('noFloors')}</p>
                           ) : (
                             <div className="space-y-4 pl-6">
-                              {building.floors.map(floor => (
+                              {building.floors.map((floor: any) => (
                                 <div key={floor.id} className="border rounded-md bg-background p-3">
                                   <div className="flex items-center justify-between p-2 bg-secondary/20 rounded-md mb-3">
                                     <span className="text-sm font-semibold flex items-center gap-2">
@@ -233,7 +233,7 @@ export default async function LocationsPage() {
                                                 <Label>{inventory('responsible')}</Label>
                                                 <select name="responsibleId" className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm">
                                                   <option value="">— {common('search')} —</option>
-                                                  {users.map(u => (
+                                                  {users.map((u: any) => (
                                                     <option key={u.id} value={u.id}>{u.fullName} ({u.role})</option>
                                                   ))}
                                                 </select>
@@ -260,7 +260,7 @@ export default async function LocationsPage() {
                                     {floor.rooms.length === 0 ? (
                                       <p className="text-muted-foreground text-xs italic">{t('noRooms')}</p>
                                     ) : (
-                                      floor.rooms.map(room => (
+                                      floor.rooms.map((room: any) => (
                                         <Link href={`/locations/rooms/${room.id}`} key={room.id}>
                                           <Badge variant="outline" className="flex items-center gap-1 py-1 px-2 text-sm hover:bg-primary/10 cursor-pointer transition-colors">
                                             <DoorOpen className="h-3 w-3" /> {room.number}
