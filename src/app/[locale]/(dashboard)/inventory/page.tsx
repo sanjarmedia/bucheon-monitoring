@@ -34,7 +34,7 @@ import {
 export default async function InventoryPage({
   searchParams
 }: {
-  searchParams: { q?: string, category?: string, status?: string, faculty?: string, page?: string }
+  searchParams: { q?: string, category?: string, status?: string, faculty?: string, page?: string, perPage?: string }
 }) {
   const t = await getTranslations("Inventory")
   const common = await getTranslations("Common")
