@@ -72,7 +72,36 @@ async function main() {
   const printerCategory = await prisma.category.create({ data: { name: 'Printer' } })
   const projectorCategory = await prisma.category.create({ data: { name: 'Projector' } })
 
-  console.log({ admin, itCampus, chilonzor })
+  // Find a room to assign items to (e.g., 401)
+  const room401 = await prisma.room.findFirst({ where: { number: '401' } })
+
+  if (room401) {
+    await prisma.inventoryItem.create({
+      data: {
+        name: 'HP EliteBook 840 G8',
+        serialNumber: 'HP-840-401',
+        inventoryNumber: 'INV-PC-401',
+        status: 'ACTIVE',
+        categoryId: pcCategory.id,
+        roomId: room401.id,
+        assignedToId: admin.id,
+      }
+    })
+
+    await prisma.inventoryItem.create({
+      data: {
+        name: 'Epson Pro Projector',
+        serialNumber: 'EPS-PRO-401',
+        inventoryNumber: 'INV-PJ-401',
+        status: 'ACTIVE',
+        categoryId: projectorCategory.id,
+        roomId: room401.id,
+        assignedToId: admin.id,
+      }
+    })
+  }
+
+  console.log({ admin, itCampus, chilonzor, room401: room401?.number })
 }
 
 main()

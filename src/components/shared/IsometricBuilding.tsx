@@ -8,6 +8,7 @@ interface Room {
   id: string
   number: string
   faculty: string | null
+  inventory?: { categoryId: string }[]
   _count?: { inventory: number; tickets: number }
 }
 
@@ -34,7 +35,7 @@ const FLOOR_COLORS = [
 
 import { useTranslations } from "next-intl"
 
-export function IsometricBuilding({ building }: { building: BuildingData }) {
+export function IsometricBuilding({ building, categories = [] }: { building: BuildingData, categories?: any[] }) {
   const router = useRouter()
   const t = useTranslations('Locations')
   const roomsT = useTranslations('Rooms')
@@ -251,6 +252,61 @@ export function IsometricBuilding({ building }: { building: BuildingData }) {
                     </button>
                   ))
                 )}
+              </div>
+
+              {/* Floor Statistics */}
+              <div className="border-t bg-muted/30 p-4">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                   <Layers className="h-3 w-3" /> {t('floor')} {common('statistics')}
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-2 text-muted-foreground">
+                          <Building2 className="h-4 w-4" /> {roomsT('totalInventory')}
+                        </span>
+                        <span className="font-bold">
+                          {floors[activeFloor]?.rooms.reduce((acc, r) => acc + (r._count?.inventory || 0), 0)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Cameras</span>
+                        <span className="font-medium">
+                           {floors[activeFloor]?.rooms.reduce((acc, r) => {
+                             const camCat = categories.find(c => c.name.toLowerCase().includes('камера') || c.name.toLowerCase().includes('camera'))
+                             return acc + (r.inventory?.filter(i => i.categoryId === camCat?.id).length || 0)
+                           }, 0)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Network (WiFi/Router)</span>
+                        <span className="font-medium">
+                           {floors[activeFloor]?.rooms.reduce((acc, r) => {
+                             const netCat = categories.find(c => c.name.toLowerCase().includes('сеть') || c.name.toLowerCase().includes('tarmoq') || c.name.toLowerCase().includes('network'))
+                             return acc + (r.inventory?.filter(i => i.categoryId === netCat?.id).length || 0)
+                           }, 0)}
+                        </span>
+                      </div>
+                   </div>
+
+                   <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-2 text-muted-foreground">
+                          <DoorOpen className="h-4 w-4" /> {roomsT('activeTickets')}
+                        </span>
+                        <span className="font-bold text-orange-500">
+                          {floors[activeFloor]?.rooms.reduce((acc, r) => acc + (r._count?.tickets || 0), 0)}
+                        </span>
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-border/50">
+                        <p className="text-[10px] text-muted-foreground italic">
+                           {floors[activeFloor]?.rooms.reduce((acc, r) => acc + (r._count?.tickets || 0), 0) > 0 
+                             ? "Problemlar bartaraf etilmoqda..." 
+                             : "Hozircha muammolar yo'q."}
+                        </p>
+                      </div>
+                   </div>
+                </div>
               </div>
             </div>
           )}

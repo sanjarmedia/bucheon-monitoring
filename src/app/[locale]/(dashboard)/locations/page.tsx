@@ -36,15 +36,20 @@ import {
 export default async function LocationsPage() {
   let branches: any[] = []
   let users: any[] = []
+  let categories: any[] = []
   
   try {
-    [branches, users] = await Promise.all([
+    const results = await Promise.all([
       LocationService.getFullLocationTree(),
       prisma.user.findMany({
         select: { id: true, fullName: true, role: true },
         orderBy: { fullName: 'asc' }
-      })
+      }),
+      prisma.category.findMany()
     ])
+    branches = results[0]
+    users = results[1]
+    categories = results[2]
   } catch (error) {
     console.error("Locations data error:", error)
   }
@@ -162,7 +167,7 @@ export default async function LocationsPage() {
                           {/* 3D Isometric Viewer */}
                           {building.floors.length > 0 && (
                             <div className="mb-6">
-                              <IsometricBuilding building={building as any} />
+                              <IsometricBuilding building={building as any} categories={categories} />
                             </div>
                           )}
 

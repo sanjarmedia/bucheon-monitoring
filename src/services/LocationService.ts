@@ -18,6 +18,9 @@ export class LocationService {
                 rooms: {
                   include: {
                     responsible: true,
+                    inventory: {
+                      select: { categoryId: true }
+                    },
                     _count: {
                       select: { inventory: true, tickets: true }
                     }
