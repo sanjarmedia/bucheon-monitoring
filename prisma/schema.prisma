@@ -16,6 +16,7 @@ model User {
   position    String?
   department  String?
   contactInfo String?
+  imageUrl    String?
 
   // Tree Structure (Manager -> Subordinates)
   managerId    String?
