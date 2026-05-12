@@ -210,5 +210,26 @@
     "resolutionDesc": "Muammo qanday hal qilingani haqida izoh qoldiring.",
     "resolutionComment": "Yechim izohi",
     "closeTelegram": "Yopish va Telegramga yuborish"
+  },
+  "Profile": {
+    "fullName": "To'liq ism",
+    "email": "Email manzili",
+    "role": "Rol",
+    "roleNotice": "Rol faqat Super Admin tomonidan o'zgartirilishi mumkin",
+    "newPhoto": "Yangi profil surati",
+    "unsaved": "Saqlanmagan o'zgarishlar bor!",
+    "confirmLeave": "Sizda saqlanmagan o'zgarishlar bor. Haqiqatan ham tark etmoqchimisiz?"
+  },
+  "Settings": {
+    "title": "Tizim Sozlamalari",
+    "description": "Integratsiyalar va platforma konfiguratsiyasi",
+    "tgTitle": "Telegram Bot",
+    "tgDesc": "Arizalar haqida bildirishnomalar yuborish",
+    "tgEnable": "Integratsiyani yoqish",
+    "gsTitle": "Google Sheets Sync",
+    "gsDesc": "Inventarizatsiyani avtomatik sinxronizatsiya qilish",
+    "gsEnable": "Avto-sinxronlash",
+    "cctvTitle": "CCTV / Monitoring",
+    "cctvDesc": "Kuzatuv kameralari server manzili"
   }
 }

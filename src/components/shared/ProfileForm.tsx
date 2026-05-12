@@ -11,10 +11,11 @@ import { useTranslations } from "next-intl"
 
 export function ProfileForm({ user }: { user: any }) {
   const common = useTranslations("Common")
+  const t = useTranslations("Profile")
   const [isDirty, setIsDirty] = useState(false)
   
   // Hook to warn about unsaved changes
-  useConfirmLeave(isDirty)
+  useConfirmLeave(isDirty, t('confirmLeave'))
 
   const handleChange = () => setIsDirty(true)
 
@@ -32,13 +33,13 @@ export function ProfileForm({ user }: { user: any }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
-            <User className="h-4 w-4" /> To'liq ism
+            <User className="h-4 w-4" /> {t('fullName')}
           </Label>
           <Input name="fullName" defaultValue={user.fullName} required />
         </div>
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
-            <Mail className="h-4 w-4" /> Email manzili
+            <Mail className="h-4 w-4" /> {t('email')}
           </Label>
           <Input name="email" type="email" defaultValue={user.email} required />
         </div>
@@ -46,15 +47,15 @@ export function ProfileForm({ user }: { user: any }) {
 
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
-          <Shield className="h-4 w-4" /> Rol
+          <Shield className="h-4 w-4" /> {t('role')}
         </Label>
         <Input defaultValue={user.role} disabled className="bg-muted" />
-        <p className="text-[10px] text-muted-foreground">Rol faqat Super Admin tomonidan o'zgartirilishi mumkin</p>
+        <p className="text-[10px] text-muted-foreground">{t('roleNotice')}</p>
       </div>
 
       <div className="space-y-2">
         <Label className="flex items-center gap-2">
-          <ImageIcon className="h-4 w-4" /> Yangi profil surati
+          <ImageIcon className="h-4 w-4" /> {t('newPhoto')}
         </Label>
         <Input name="image" type="file" accept="image/*" />
       </div>
@@ -62,7 +63,7 @@ export function ProfileForm({ user }: { user: any }) {
       <div className="pt-4 border-t flex justify-end items-center gap-4">
         {isDirty && (
           <span className="text-xs text-orange-500 animate-pulse font-medium">
-            Saqlanmagan o'zgarishlar bor!
+            {t('unsaved')}
           </span>
         )}
         <Button type="submit" className="gap-2 px-8">

@@ -11,6 +11,7 @@ import { saveSystemSettings } from "@/lib/actions/settings"
 
 export default async function SettingsPage() {
   const common = await getTranslations("Common")
+  const t = await getTranslations("Settings")
   
   const settings = await prisma.systemSetting.findMany()
   const getVal = (key: string) => settings.find(s => s.key === key)?.value || ""
@@ -18,8 +19,8 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6">
       <PageHeader 
-        title="Tizim Sozlamalari" 
-        description="Integratsiyalar va platforma konfiguratsiyasi"
+        title={t('title')} 
+        description={t('description')}
       />
 
       <form action={saveSystemSettings}>
@@ -28,13 +29,13 @@ export default async function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Send className="h-5 w-5 text-blue-500" /> Telegram Bot
+                <Send className="h-5 w-5 text-blue-500" /> {t('tgTitle')}
               </CardTitle>
-              <CardDescription>Arizalar haqida bildirishnomalar yuborish</CardDescription>
+              <CardDescription>{t('tgDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="tg_enabled">Integratsiyani yoqish</Label>
+                <Label htmlFor="tg_enabled">{t('tgEnable')}</Label>
                 <Switch id="tg_enabled" name="tg_enabled" defaultChecked={getVal('tg_enabled') === 'on'} />
               </div>
               <div className="space-y-2">
@@ -52,13 +53,13 @@ export default async function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5 text-green-600" /> Google Sheets Sync
+                <Database className="h-5 w-5 text-green-600" /> {t('gsTitle')}
               </CardTitle>
-              <CardDescription>Inventarizatsiyani avtomatik sinxronizatsiya qilish</CardDescription>
+              <CardDescription>{t('gsDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="gs_enabled">Avto-sinxronlash</Label>
+                <Label htmlFor="gs_enabled">{t('gsEnable')}</Label>
                 <Switch id="gs_enabled" name="gs_enabled" defaultChecked={getVal('gs_enabled') === 'on'} />
               </div>
               <div className="space-y-2">
@@ -72,9 +73,9 @@ export default async function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Share2 className="h-5 w-5 text-purple-500" /> CCTV / Monitoring
+                <Share2 className="h-5 w-5 text-purple-500" /> {t('cctvTitle')}
               </CardTitle>
-              <CardDescription>Kuzatuv kameralari server manzili</CardDescription>
+              <CardDescription>{t('cctvDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">

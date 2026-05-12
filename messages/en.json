@@ -14,6 +14,8 @@
     "employees": "Employees",
     "locations": "Locations",
     "attendance": "Attendance",
+    "profile": "Profile",
+    "settings": "Settings",
     "all": "All",
     "litsey": "Lyceum",
     "texnikum": "Technical School",
@@ -177,7 +179,9 @@
     "subtitle": "Manage university employees and access rights here.",
     "role": "Role",
     "location": "Location",
-    "manager": "Manager"
+    "manager": "Manager",
+    "addEmployee": "Add Employee",
+    "addSubtitle": "Enter new employee details and assign a role."
   },
   "Tickets": {
     "title": "Support System",
@@ -206,5 +210,26 @@
     "resolutionDesc": "Leave a comment on how the issue was resolved.",
     "resolutionComment": "Resolution Comment",
     "closeTelegram": "Close and send to Telegram"
+  },
+  "Profile": {
+    "fullName": "Full Name",
+    "email": "Email Address",
+    "role": "Role",
+    "roleNotice": "Role can only be changed by Super Admin",
+    "newPhoto": "New Profile Photo",
+    "unsaved": "Unsaved changes!",
+    "confirmLeave": "You have unsaved changes. Are you sure you want to leave?"
+  },
+  "Settings": {
+    "title": "System Settings",
+    "description": "Integrations and platform configuration",
+    "tgTitle": "Telegram Bot",
+    "tgDesc": "Send notifications about requests",
+    "tgEnable": "Enable integration",
+    "gsTitle": "Google Sheets Sync",
+    "gsDesc": "Automatic inventory synchronization",
+    "gsEnable": "Auto-sync",
+    "cctvTitle": "CCTV / Monitoring",
+    "cctvDesc": "Surveillance server address"
   }
 }
