@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { getTranslations } from "next-intl/server"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { CreateEmployeeButton } from "@/components/shared/CreateEmployeeButton"
+import { DeleteEmployeeButton } from "@/components/shared/DeleteEmployeeButton"
 import { Image as ImageIcon } from "lucide-react"
 
 export default async function EmployeesPage() {
@@ -61,6 +62,7 @@ export default async function EmployeesPage() {
                 <TableHead>Email</TableHead>
                 <TableHead>{t('location')}</TableHead>
                 <TableHead>{t('manager')}</TableHead>
+                <TableHead className="text-right">{common('actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -94,6 +96,11 @@ export default async function EmployeesPage() {
                   </TableCell>
                   <TableCell>
                     {emp.manager ? emp.manager.fullName : "-"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                       <DeleteEmployeeButton id={emp.id} name={emp.fullName} />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

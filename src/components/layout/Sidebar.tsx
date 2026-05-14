@@ -5,20 +5,22 @@ import { LayoutDashboard, Package, Ticket, Users, MapPin, ChevronDown, ChevronRi
 import { useState } from "react"
 import { useSearchParams } from "next/navigation"
 
-export function Sidebar() {
+export function Sidebar({ role }: { role?: string }) {
   const t = useTranslations('Sidebar')
   const pathname = usePathname()
 
-  const links = [
+  const allLinks = [
     { href: "/", key: "dashboard", icon: LayoutDashboard },
     { href: "/inventory", key: "inventory", icon: Package, hasSubmenu: true },
     { href: "/requests", key: "requests", icon: Ticket },
-    { href: "/employees", key: "employees", icon: Users },
-    { href: "/locations", key: "locations", icon: MapPin },
+    { href: "/employees", key: "employees", icon: Users, adminOnly: true },
+    { href: "/locations", key: "locations", icon: MapPin, adminOnly: true },
     { href: "/attendance", key: "attendance", icon: Users },
     { href: "/profile", key: "profile", icon: User },
-    { href: "/settings", key: "settings", icon: Settings },
+    { href: "/settings", key: "settings", icon: Settings, adminOnly: true },
   ]
+
+  const links = allLinks.filter(l => !l.adminOnly || (role === 'SUPER_ADMIN' || role === 'ADMIN'))
 
   const inventorySubmenu = [
     { href: "/inventory", label: t("all"), query: "" },

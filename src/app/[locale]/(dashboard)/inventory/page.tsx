@@ -127,7 +127,7 @@ export default async function InventoryPage({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="ACTIVE">ACTIVE</SelectItem>
-                        <SelectItem value="REPAIR">IN REPAIR</SelectItem>
+                        <SelectItem value="IN_REPAIR">IN REPAIR</SelectItem>
                         <SelectItem value="WRITTEN_OFF">WRITTEN OFF</SelectItem>
                       </SelectContent>
                     </Select>

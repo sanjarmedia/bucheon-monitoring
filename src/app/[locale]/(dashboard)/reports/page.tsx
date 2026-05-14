@@ -5,22 +5,37 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Bell, Info, TrendingUp, Users, MapPin } from "lucide-react"
 import { getTranslations } from "next-intl/server"
+import { InventoryService } from "@/services/InventoryService"
+import { prisma } from "@/lib/prisma"
 
 export default async function ReportsPage() {
   const t = await getTranslations('Reports')
   const common = await getTranslations('Common')
   const stats = await TicketService.getStats()
+  const invStats = await InventoryService.getStats()
   
-  // Mock data for charts
-  const chartData = [
-    { name: 'Mon', tickets: 4 },
-    { name: 'Tue', tickets: 7 },
-    { name: 'Wed', tickets: 5 },
-    { name: 'Thu', tickets: 12 },
-    { name: 'Fri', tickets: 9 },
-    { name: 'Sat', tickets: 2 },
-    { name: 'Sun', tickets: 1 },
-  ]
+  // Real data for charts (last 7 days)
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() - (6 - i))
+    return d
+  })
+
+  // Group tickets by day
+  const ticketsByDay = await prisma.ticket.findMany({
+    where: {
+      createdAt: { gte: last7Days[0] }
+    },
+    select: { createdAt: true }
+  })
+
+  const chartData = last7Days.map(day => {
+    const dayStr = day.toLocaleDateString('en-US', { weekday: 'short' })
+    const count = ticketsByDay.filter(t => 
+      new Date(t.createdAt).toDateString() === day.toDateString()
+    ).length
+    return { name: dayStr, tickets: count }
+  })
 
   const facultyChartData = stats.byFaculty
     .filter(f => f.faculty)

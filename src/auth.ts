@@ -10,12 +10,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // Here we would lookup the user in the database
-        // For now, allow a dummy admin
-        if (credentials?.email === "admin@test.com" && credentials?.password === "admin") {
-          return { id: "1", name: "Super Admin", email: "admin@test.com", role: "SUPER_ADMIN" }
+        const { prisma } = await import("@/lib/prisma")
+        const bcrypt = await import("bcryptjs")
+
+        if (!credentials?.email || !credentials?.password) {
+          return null
         }
-        return null
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email as string }
+        })
+
+        if (!user || !user.password) {
+          return null
+        }
+
+        const isMatch = await bcrypt.compare(credentials.password as string, user.password)
+        
+        if (!isMatch) {
+          return null
+        }
+
+        return { 
+          id: user.id, 
+          name: user.fullName, 
+          email: user.email, 
+          role: user.role 
+        }
       }
     })
   ],

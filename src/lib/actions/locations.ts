@@ -64,7 +64,7 @@ export async function createRoom(formData: FormData) {
       floorId,
       faculty: faculty || null,
       responsibleId: responsibleId || null,
-      responsibleSince: responsibleSince ? new Date(responsibleSince) : null,
+      responsibleSince: (responsibleSince && !isNaN(Date.parse(responsibleSince))) ? new Date(responsibleSince) : null,
     }
   })
 
@@ -157,17 +157,32 @@ export async function bulkCreateRooms(formData: FormData) {
     throw new Error("Invalid parameters for bulk creation")
   }
 
+  // Check for existing rooms to avoid crash
+  const existingRooms = await prisma.room.findMany({
+    where: {
+      floorId,
+      number: { in: Array.from({ length: end - start + 1 }, (_, i) => `${prefix}${start + i}`) }
+    },
+    select: { number: true }
+  })
+  const existingNumbers = new Set(existingRooms.map(r => r.number))
+
   const roomsToCreate = []
   for (let i = start; i <= end; i++) {
-    roomsToCreate.push({
-      number: `${prefix}${i}`,
-      floorId
-    })
+    const num = `${prefix}${i}`
+    if (!existingNumbers.has(num)) {
+      roomsToCreate.push({
+        number: num,
+        floorId
+      })
+    }
   }
 
-  await prisma.room.createMany({
-    data: roomsToCreate
-  })
+  if (roomsToCreate.length > 0) {
+    await prisma.room.createMany({
+      data: roomsToCreate
+    })
+  }
 
   revalidatePath("/en/locations")
   revalidatePath("/uz/locations")

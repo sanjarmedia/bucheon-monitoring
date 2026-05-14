@@ -47,13 +47,23 @@ export async function POST(req: Request) {
 
     if (turnstile.type === 'IN') {
       if (!daily) {
+        // Fetch work start time from settings
+        const startTimeSetting = await prisma.systemSetting.findUnique({ where: { key: 'work_start_time' } })
+        const startTimeStr = startTimeSetting?.value || "09:00"
+        const [startHour, startMin] = startTimeStr.split(':').map(Number)
+        
+        // Create a comparison date for today at start time
+        const workStartTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMin)
+        
+        const isLate = now.getTime() > workStartTime.getTime()
+
         // First IN of the day
         daily = await prisma.dailyAttendance.create({
           data: {
             userId,
             date: today,
             firstIn: now,
-            status: "PRESENT" // LATE calculation could be added here based on time
+            status: isLate ? "LATE" : "PRESENT"
           }
         })
       }

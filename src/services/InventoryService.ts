@@ -109,6 +109,7 @@ export class InventoryService {
     serialNumber?: string | null
     cost?: number | null
     imageUrl?: string | null
+    status?: string
     userId: string // Who performed the creation
   }) {
     return await prisma.inventoryItem.create({
@@ -119,7 +120,7 @@ export class InventoryService {
         serialNumber: data.serialNumber,
         imageUrl: data.imageUrl,
         cost: data.cost,
-        status: "ACTIVE",
+        status: data.status || "ACTIVE",
         history: {
           create: {
             action: "CREATED",
@@ -129,5 +130,24 @@ export class InventoryService {
         }
       }
     })
+  }
+  /**
+   * Get overall inventory statistics for reports.
+   */
+  static async getStats() {
+    const total = await prisma.inventoryItem.count()
+    const active = await prisma.inventoryItem.count({ where: { status: "ACTIVE" } })
+    const inRepair = await prisma.inventoryItem.count({ where: { status: "IN_REPAIR" } })
+    
+    // Group by category
+    const byCategory = await prisma.category.findMany({
+      include: {
+        _count: {
+          select: { items: true }
+        }
+      }
+    })
+
+    return { total, active, inRepair, byCategory }
   }
 }

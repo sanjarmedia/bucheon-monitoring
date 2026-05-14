@@ -7,8 +7,12 @@ import { Label } from "@/components/ui/label"
 import { Link } from "@/i18n/routing"
 import { ArrowLeft, Edit, MapPin, User, Tag, Calendar, DollarSign, Activity, Image as ImageIcon, History } from "lucide-react"
 import { getTranslations } from "next-intl/server"
+import { auth } from "@/auth"
+import { EditInventoryDialog } from "@/components/shared/EditInventoryDialog"
+import { DeleteInventoryButton } from "@/components/shared/DeleteInventoryButton"
 
 export default async function InventoryDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const session = await auth()
   const { id } = await params
   const item = await prisma.inventoryItem.findUnique({
     where: { id },
@@ -52,9 +56,12 @@ export default async function InventoryDetailsPage({ params }: { params: Promise
             </p>
           </div>
         </div>
-        <Button className="gap-2">
-          <Edit className="h-4 w-4" /> {t('editItem')}
-        </Button>
+        <div className="flex gap-2">
+          <EditInventoryDialog item={item} />
+          {(session?.user as any).role === 'SUPER_ADMIN' && (
+            <DeleteInventoryButton id={item.id} name={item.name} />
+          )}
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">

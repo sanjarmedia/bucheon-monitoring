@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Save, Send, Database, Share2 } from "lucide-react"
+import { Save, Send, Database, Share2, Clock } from "lucide-react"
 import { prisma } from "@/lib/prisma"
 import { saveSystemSettings } from "@/lib/actions/settings"
 
@@ -85,6 +85,21 @@ export default async function SettingsPage() {
               <div className="space-y-2">
                 <Label>Stream Protocol</Label>
                 <Input name="cctv_protocol" defaultValue={getVal('cctv_protocol')} placeholder="HLS / WebRTC" />
+              </div>
+            </CardContent>
+          </Card>
+          {/* Work Schedule */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-orange-500" /> {t('workSchedule') || "Ish tartibi"}
+              </CardTitle>
+              <CardDescription>Ish vaqti va kechikishlarni hisoblash sozlamalari</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Ish boshlanish vaqti (HH:mm)</Label>
+                <Input name="work_start_time" defaultValue={getVal('work_start_time')} placeholder="09:00" />
               </div>
             </CardContent>
           </Card>

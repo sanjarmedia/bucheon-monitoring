@@ -42,6 +42,8 @@ export async function createInventoryItem(formData: FormData) {
 
   const { InventoryService } = await import("@/services/InventoryService")
 
+  const status = (formData.get("status") as string) || "ACTIVE"
+
   const newItem = await InventoryService.createItem({
     name,
     categoryId,
@@ -49,6 +51,7 @@ export async function createInventoryItem(formData: FormData) {
     serialNumber: serialNumber || null,
     imageUrl: imageUrl,
     cost: isNaN(cost) ? null : cost,
+    status: status,
     userId: session.user.id
   })
 
@@ -58,6 +61,53 @@ export async function createInventoryItem(formData: FormData) {
   } catch (e) {
     console.error("Google sync error non-fatal", e)
   }
+
+  revalidatePath("/en/inventory")
+  revalidatePath("/uz/inventory")
+  revalidatePath("/ru/inventory")
+}
+
+export async function updateInventoryItem(formData: FormData) {
+  const session = await auth()
+  if (!session || (session.user as any).role !== 'SUPER_ADMIN') {
+    throw new Error("Unauthorized")
+  }
+
+  const id = formData.get("id") as string
+  const name = formData.get("name") as string
+  const status = formData.get("status") as string
+  const cost = parseFloat(formData.get("cost") as string) || 0
+  const serialNumber = formData.get("serialNumber") as string
+  const inventoryNumber = formData.get("inventoryNumber") as string
+
+  await prisma.inventoryItem.update({
+    where: { id },
+    data: {
+      name,
+      status,
+      cost,
+      serialNumber: serialNumber || null,
+      inventoryNumber: inventoryNumber || null,
+    }
+  })
+
+  revalidatePath("/en/inventory")
+  revalidatePath("/uz/inventory")
+  revalidatePath("/ru/inventory")
+  revalidatePath(`/en/inventory/${id}`)
+  revalidatePath(`/uz/inventory/${id}`)
+  revalidatePath(`/ru/inventory/${id}`)
+}
+
+export async function deleteInventoryItem(id: string) {
+  const session = await auth()
+  if (!session || (session.user as any).role !== 'SUPER_ADMIN') {
+    throw new Error("Unauthorized")
+  }
+
+  await prisma.inventoryItem.delete({
+    where: { id }
+  })
 
   revalidatePath("/en/inventory")
   revalidatePath("/uz/inventory")

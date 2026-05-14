@@ -2,106 +2,102 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 async function main() {
-  // Create test user (Admin)
+  console.log('🌱 Seeding Bucheon Monitoring database...')
+
+  const bcrypt = require('bcryptjs')
+  const hashedPassword = await bcrypt.hash('admin', 10)
+
+  // 1. Asosiy Adminni yaratish/yangilash
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@test.com' },
+    where: { email: 'admin@bucheon.uz' },
     update: {},
     create: {
-      email: 'admin@test.com',
+      email: 'admin@bucheon.uz',
       fullName: 'Super Admin',
       role: 'SUPER_ADMIN',
+      password: hashedPassword, 
     },
   })
 
-  // Create Branches
-  const itCampus = await prisma.branch.create({
-    data: {
-      name: 'IT Campus',
-      buildings: {
-        create: [
-          {
-            name: 'IT Building',
-            floors: {
-              create: [
-                { number: -1, rooms: { create: [{ number: 'B-01', faculty: 'Archive' }] } },
-                { number: 0, rooms: { create: [{ number: 'G-01', faculty: 'Reception' }] } },
-                { number: 1, rooms: { create: [{ number: '101' }, { number: '102' }] } },
-                { number: 2, rooms: { create: [{ number: '201' }, { number: '202' }] } },
-                { number: 3, rooms: { create: [{ number: '301', faculty: 'Litsey' }, { number: '302', faculty: 'Litsey' }] } },
-                { number: 4, rooms: { create: [{ number: '401' }, { number: '402' }] } },
-                { number: 5, rooms: { create: [{ number: '501' }, { number: '502' }] } },
-                { number: 6, rooms: { create: [{ number: '601' }, { number: '602' }] } },
-              ]
-            }
-          }
-        ]
-      }
-    }
-  })
+  // 2. Filiallar (Branches)
+  const branches = [
+    { name: 'Chilonzor Filiali' },
+    { name: 'IT Campus' },
+    { name: 'Texnikum' }
+  ]
 
-  const chilonzor = await prisma.branch.create({
-    data: {
-      name: 'Chilonzor',
-      buildings: {
-        create: [
-          {
-            name: 'Building A',
-            floors: {
-              create: [
-                { number: 1, rooms: { create: [{ number: 'A-101' }] } },
-                { number: 2, rooms: { create: [{ number: 'A-201' }] } },
-              ]
-            }
-          },
-          {
-            name: 'Building B',
-            floors: {
-              create: [
-                { number: 1, rooms: { create: [{ number: 'B-101' }] } },
-                { number: 2, rooms: { create: [{ number: 'B-201' }] } },
-              ]
-            }
-          }
-        ]
-      }
-    }
-  })
-
-  // Categories
-  const pcCategory = await prisma.category.create({ data: { name: 'PC' } })
-  const printerCategory = await prisma.category.create({ data: { name: 'Printer' } })
-  const projectorCategory = await prisma.category.create({ data: { name: 'Projector' } })
-
-  // Find a room to assign items to (e.g., 401)
-  const room401 = await prisma.room.findFirst({ where: { number: '401' } })
-
-  if (room401) {
-    await prisma.inventoryItem.create({
-      data: {
-        name: 'HP EliteBook 840 G8',
-        serialNumber: 'HP-840-401',
-        inventoryNumber: 'INV-PC-401',
-        status: 'ACTIVE',
-        categoryId: pcCategory.id,
-        roomId: room401.id,
-        assignedToId: admin.id,
-      }
-    })
-
-    await prisma.inventoryItem.create({
-      data: {
-        name: 'Epson Pro Projector',
-        serialNumber: 'EPS-PRO-401',
-        inventoryNumber: 'INV-PJ-401',
-        status: 'ACTIVE',
-        categoryId: projectorCategory.id,
-        roomId: room401.id,
-        assignedToId: admin.id,
-      }
+  for (const b of branches) {
+    await prisma.branch.upsert({
+      where: { name: b.name },
+      update: {},
+      create: b
     })
   }
 
-  console.log({ admin, itCampus, chilonzor, room401: room401?.number })
+  const branchList = await prisma.branch.findMany()
+  const chilanzar = branchList.find(b => b.name === 'Chilonzor Filiali')
+  const itCampus = branchList.find(b => b.name === 'IT Campus')
+
+  // 3. Binolar (Buildings)
+  if (chilanzar) {
+    const buildings = ['A Bino', 'B Bino', 'C Bino']
+    for (const name of buildings) {
+      await prisma.building.upsert({
+        where: { name_branchId: { name, branchId: chilanzar.id } },
+        update: {},
+        create: { name, branchId: chilanzar.id }
+      })
+    }
+  }
+
+  if (itCampus) {
+    const buildings = ['Main IT Building', 'Dormitory', 'Innovation Center']
+    for (const name of buildings) {
+      await prisma.building.upsert({
+        where: { name_branchId: { name, branchId: itCampus.id } },
+        update: {},
+        create: { name, branchId: itCampus.id }
+      })
+    }
+  }
+
+  // 4. Categoriyalar (Excel'dagi kabi)
+  const categories = [
+    'Kompyuter va noutbuk',
+    'Monitor va ekran',
+    'Printer va skaner',
+    'Proyektor',
+    'Kamera',
+    'Audio va video',
+    'Tarmoq jihozi',
+    'Server va UPS',
+    'Aksesuar va kabel',
+    'Boshqa texnika',
+  ]
+
+  for (const name of categories) {
+    await prisma.category.upsert({
+      where: { name },
+      update: {},
+      create: { name }
+    })
+  }
+
+  // 5. Tizim sozlamalari
+  const settings = [
+    { key: 'work_start_time', value: '09:00' },
+    { key: 'tg_enabled', value: 'off' },
+  ]
+
+  for (const s of settings) {
+    await prisma.systemSetting.upsert({
+      where: { key: s.key },
+      update: {},
+      create: s
+    })
+  }
+
+  console.log('✅ Seed muvaffaqiyatli yakunlandi!')
 }
 
 main()
@@ -113,5 +109,3 @@ main()
     await prisma.$disconnect()
     process.exit(1)
   })
-
-export {}

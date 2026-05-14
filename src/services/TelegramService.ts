@@ -7,18 +7,31 @@ export class TelegramService {
    * Useful for new support tickets or urgent alerts.
    */
   static async sendMessage(text: string) {
-    if (!this.BOT_TOKEN || !this.GROUP_CHAT_ID) {
+    const { prisma } = await import("@/lib/prisma")
+    
+    // Fetch from DB first
+    const settings = await prisma.systemSetting.findMany({
+      where: { key: { in: ['tg_token', 'tg_chat_id', 'tg_enabled'] } }
+    })
+    
+    const enabled = settings.find(s => s.key === 'tg_enabled')?.value === 'on'
+    if (!enabled && !process.env.TELEGRAM_BOT_TOKEN) return false
+
+    const token = settings.find(s => s.key === 'tg_token')?.value || process.env.TELEGRAM_BOT_TOKEN
+    const chatId = settings.find(s => s.key === 'tg_chat_id')?.value || process.env.TELEGRAM_GROUP_CHAT_ID
+
+    if (!token || !chatId) {
       console.warn("Telegram BOT_TOKEN or GROUP_CHAT_ID not configured.")
       return false
     }
 
     try {
-      const url = `https://api.telegram.org/bot${this.BOT_TOKEN}/sendMessage`
+      const url = `https://api.telegram.org/bot${token}/sendMessage`
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chat_id: this.GROUP_CHAT_ID,
+          chat_id: chatId,
           text: text,
           parse_mode: "HTML",
         }),

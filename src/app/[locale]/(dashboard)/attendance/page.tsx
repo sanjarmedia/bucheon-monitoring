@@ -7,6 +7,7 @@ import { Clock, UserCheck, UserX, CalendarClock } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 import { Link } from "@/i18n/routing"
 import { PageHeader } from "@/components/shared/PageHeader"
+import { ManualAttendanceDialog } from "@/components/shared/ManualAttendanceDialog"
 
 export default async function AttendancePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
@@ -15,6 +16,11 @@ export default async function AttendancePage({ params }: { params: Promise<{ loc
   const empT = await getTranslations('Employees')
   const common = await getTranslations('Common')
   
+  const users = await prisma.user.findMany({ 
+    where: { role: { not: 'SUPER_ADMIN' } },
+    orderBy: { fullName: 'asc' }
+  })
+
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -23,10 +29,20 @@ export default async function AttendancePage({ params }: { params: Promise<{ loc
     include: { user: true }
   })
 
-  const totalEmployees = await prisma.user.count()
+  const totalEmployees = await prisma.user.count({ where: { role: { not: 'SUPER_ADMIN' } } })
   const presentCount = todayAttendance.filter(a => a.status === 'PRESENT' || a.status === 'LATE').length
   const lateCount = todayAttendance.filter(a => a.status === 'LATE').length
-  const absentCount = totalEmployees - presentCount
+  
+  // Get approved leaves for today
+  const leavesToday = await prisma.leaveRequest.count({
+    where: {
+      status: 'APPROVED',
+      startDate: { lte: today },
+      endDate: { gte: today }
+    }
+  })
+
+  const absentCount = Math.max(0, totalEmployees - presentCount - leavesToday)
 
   const formatTime = (date: Date | null) => {
     if (!date) return "-"
@@ -46,9 +62,12 @@ export default async function AttendancePage({ params }: { params: Promise<{ loc
         title={side('attendance')} 
         description={t('title')}
       >
-        <Link href="/attendance/leaves">
-          <Button variant="outline">{t('leaves')}</Button>
-        </Link>
+        <div className="flex gap-2">
+          <ManualAttendanceDialog users={users} />
+          <Link href="/attendance/leaves">
+            <Button variant="outline">{t('leaves')}</Button>
+          </Link>
+        </div>
       </PageHeader>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -117,7 +136,7 @@ export default async function AttendancePage({ params }: { params: Promise<{ loc
                   <TableCell>{formatDuration(record.totalWorkMinutes)}</TableCell>
                   <TableCell>
                     <Badge variant={record.status === 'PRESENT' ? 'default' : record.status === 'LATE' ? 'destructive' : 'secondary'}>
-                      {record.status}
+                      {t(`status_${record.status}`)}
                     </Badge>
                   </TableCell>
                 </TableRow>
