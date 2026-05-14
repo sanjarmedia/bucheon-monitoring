@@ -101,7 +101,7 @@ export default async function InventoryPage({
                 <DialogTitle>{t('addItem')}</DialogTitle>
                 <DialogDescription>{t('subtitle')}</DialogDescription>
               </DialogHeader>
-              <form action={createInventoryItem} className="space-y-4" encType="multipart/form-data">
+              <form action={async (formData) => { await createInventoryItem(formData) }} className="space-y-4" encType="multipart/form-data">
                 <div className="space-y-2">
                   <Label htmlFor="name">{t('name')}</Label>
                   <Input id="name" name="name" placeholder={t('name')} required />

@@ -13,11 +13,11 @@ export function DeleteInventoryButton({ id, name }: { id: string, name: string }
   const handleDelete = () => {
     if (confirm(`Haqiqatan ham "${name}" ni butunlay o'chirib tashlamoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi.`)) {
       startTransition(async () => {
-        try {
-          await deleteInventoryItem(id)
+        const result = await deleteInventoryItem(id)
+        if (result?.error) {
+          alert(result.error)
+        } else {
           router.push("/inventory")
-        } catch (error: any) {
-          alert(error.message)
         }
       })
     }
