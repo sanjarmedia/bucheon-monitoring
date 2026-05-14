@@ -70,7 +70,7 @@ export function InventoryFilters({ categories }: { categories: any[] }) {
       
       <div className="space-y-2 w-[200px]">
         <Label>{t('category')}</Label>
-        <Select value={category} onValueChange={setCategory}>
+        <Select value={category} onValueChange={(v) => setCategory(v || "ALL")}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">{t('allCategories')}</SelectItem>
@@ -83,7 +83,7 @@ export function InventoryFilters({ categories }: { categories: any[] }) {
 
       <div className="space-y-2 w-[150px]">
         <Label>{common('status')}</Label>
-        <Select value={status} onValueChange={setStatus}>
+        <Select value={status} onValueChange={(v) => setStatus(v || "ALL")}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">{t('allStatus')}</SelectItem>
@@ -96,7 +96,7 @@ export function InventoryFilters({ categories }: { categories: any[] }) {
 
       <div className="space-y-2 w-[100px]">
         <Label>Limit</Label>
-        <Select value={perPage} onValueChange={setPerPage}>
+        <Select value={perPage} onValueChange={(v) => setPerPage(v || "25")}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="10">10</SelectItem>

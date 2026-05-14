@@ -71,7 +71,7 @@ export function RequestFilters() {
 
           <div className="w-[180px] space-y-1">
             <Label className="text-xs text-muted-foreground uppercase tracking-wider font-bold">{t('status')}</Label>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={(v) => setStatus(v || "ALL")}>
               <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">{t('allStatus') || "All Status"}</SelectItem>
@@ -84,7 +84,7 @@ export function RequestFilters() {
 
           <div className="w-[180px] space-y-1">
             <Label className="text-xs text-muted-foreground uppercase tracking-wider font-bold">{t('priority')}</Label>
-            <Select value={priority} onValueChange={setPriority}>
+            <Select value={priority} onValueChange={(v) => setPriority(v || "ALL")}>
               <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">{t('allPriority') || "All Priority"}</SelectItem>
