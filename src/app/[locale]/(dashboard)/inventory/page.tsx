@@ -14,6 +14,8 @@ import { Plus, Download, Upload, Image as ImageIcon, Search, ExternalLink } from
 import { createInventoryItem } from "@/lib/actions/inventory"
 import { importInventoryExcel } from "@/lib/actions/excel"
 import { InventoryService } from "@/services/InventoryService"
+import { InventoryFilters } from "@/components/shared/InventoryFilters"
+import { InventoryPagination } from "@/components/shared/InventoryPagination"
 import { PageHeader } from "@/components/shared/PageHeader"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -158,61 +160,7 @@ export default async function InventoryPage({
           </Dialog>
       </PageHeader>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle>{t('filters')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form className="flex gap-4 items-end">
-            <div className="space-y-2 flex-1">
-              <Label>{common('search')}</Label>
-              <Input name="q" defaultValue={searchParams.q} placeholder={common('search')} />
-            </div>
-            <div className="space-y-2 w-[200px]">
-              <Label>{t('category')}</Label>
-              <Select name="category" defaultValue={searchParams.category || "ALL"}>
-                <SelectTrigger><SelectValue placeholder={t('allCategories')} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">{t('allCategories')}</SelectItem>
-                  {categories.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2 w-[150px]">
-              <Label>{common('status')}</Label>
-              <Select name="status" defaultValue={searchParams.status || "ALL"}>
-                <SelectTrigger><SelectValue placeholder={t('allStatus')} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">{t('allStatus')}</SelectItem>
-                  <SelectItem value="ACTIVE">ACTIVE</SelectItem>
-                  <SelectItem value="IN_REPAIR">IN_REPAIR</SelectItem>
-                  <SelectItem value="WRITTEN_OFF">WRITTEN_OFF</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2 w-[100px]">
-              <Label>Limit</Label>
-              <Select name="perPage" defaultValue={String(perPage)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                  <SelectItem value="100">100</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button type="submit" variant="secondary" className="gap-2">
-              <Search className="h-4 w-4" /> {t('filterBtn')}
-            </Button>
-            <Link href="/inventory">
-              <Button type="button" variant="ghost">{t('clear')}</Button>
-            </Link>
-          </form>
-        </CardContent>
-      </Card>
+      <InventoryFilters categories={categories} />
 
       <Card>
         <CardHeader>
@@ -306,84 +254,12 @@ export default async function InventoryPage({
         </CardContent>
       </Card>
 
-      {/* --- PAGINATION --- */}
-      {totalPages > 1 && (() => {
-        const buildUrl = (page: number) => {
-          const params = new URLSearchParams()
-          if (searchParams.q) params.set("q", searchParams.q)
-          if (searchParams.category) params.set("category", searchParams.category)
-          if (searchParams.status) params.set("status", searchParams.status)
-          if (searchParams.faculty) params.set("faculty", searchParams.faculty)
-          if (searchParams.perPage) params.set("perPage", searchParams.perPage)
-          params.set("page", String(page))
-          return `?${params.toString()}`
-        }
-
-        const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
-          .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2)
-          .reduce<(number | string)[]>((acc, p, idx, arr) => {
-            if (idx > 0 && (arr[idx - 1] as number) < p - 1) acc.push("...")
-            acc.push(p)
-            return acc
-          }, [])
-
-        return (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {t('totalShown', {
-                start: (currentPage - 1) * perPage + 1,
-                end: Math.min(currentPage * perPage, total),
-                total: total
-              })}
-            </p>
-
-            <div className="flex items-center gap-1">
-              <Link
-                href={buildUrl(Math.max(1, currentPage - 1))}
-                scroll={false}
-                className={`inline-flex items-center justify-center h-9 w-9 rounded-lg border text-sm transition-colors ${
-                  currentPage <= 1
-                    ? "pointer-events-none opacity-40 bg-muted"
-                    : "hover:bg-secondary hover:text-foreground bg-card"
-                }`}
-              >
-                ‹
-              </Link>
-
-              {pages.map((p, i) =>
-                p === "..." ? (
-                  <span key={`ellipsis-${i}`} className="h-9 w-9 flex items-center justify-center text-muted-foreground text-sm">…</span>
-                ) : (
-                  <Link
-                    key={p}
-                    href={buildUrl(p as number)}
-                    scroll={false}
-                    className={`inline-flex items-center justify-center h-9 w-9 rounded-lg border text-sm font-medium transition-colors ${
-                      p === currentPage
-                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                        : "bg-card hover:bg-secondary"
-                    }`}
-                  >
-                    {p}
-                  </Link>
-                )
-              )}
-
-              <Link
-                href={buildUrl(Math.min(totalPages, currentPage + 1))}
-                scroll={false}
-                className={`inline-flex items-center justify-center h-9 w-9 rounded-lg border text-sm transition-colors ${
-                  currentPage >= totalPages
-                    ? "pointer-events-none opacity-40 bg-muted"
-                    : "hover:bg-secondary hover:text-foreground bg-card"
-                }`}
-              >
-                ›
-              </Link>
-            </div>
-          </div>
-        )
-      })()}
+      <InventoryPagination 
+        total={total}
+        totalPages={totalPages}
+        currentPage={currentPage}
+        perPage={perPage}
+      />
     </div>
   )
 }

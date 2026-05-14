@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,18 +28,17 @@ export function ManualAttendanceDialog({ users }: { users: any[] }) {
   const t = useTranslations("Attendance")
   const common = useTranslations("Common")
   const [open, setOpen] = useState(false)
-  const [isPending, setIsPending] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   async function handleSubmit(formData: FormData) {
-    setIsPending(true)
-    try {
-      await manualCheckIn(formData)
-      setOpen(false)
-    } catch (error: any) {
-      alert(error.message)
-    } finally {
-      setIsPending(false)
-    }
+    startTransition(async () => {
+      try {
+        await manualCheckIn(formData)
+        setOpen(false)
+      } catch (error: any) {
+        alert(error.message)
+      }
+    })
   }
 
   return (
