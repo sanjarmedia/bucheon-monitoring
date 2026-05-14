@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
 import { deleteEmployee } from "@/lib/actions/user"
 import { useTransition } from "react"
-import { toast } from "react-hot-toast"
 
 export function DeleteEmployeeButton({ id, name }: { id: string, name: string }) {
   const [isPending, startTransition] = useTransition()
