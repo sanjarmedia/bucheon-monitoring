@@ -6,6 +6,7 @@ import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 
 import { auth } from "@/auth"
+import bcrypt from "bcryptjs"
 
 export async function createEmployee(formData: FormData) {
   const session = await auth()
@@ -105,4 +106,38 @@ export async function deleteEmployee(id: string) {
   })
 
   revalidatePath("/employees")
+}
+
+export async function updatePassword(formData: FormData) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" }
+  }
+
+  const currentPassword = formData.get("currentPassword") as string
+  const newPassword = formData.get("newPassword") as string
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id }
+  })
+
+  if (!user || !user.password) {
+    return { error: "User or password not found" }
+  }
+
+  // Verify current password
+  const isValid = await bcrypt.compare(currentPassword, user.password)
+  if (!isValid) {
+    return { error: "Amaldagi parol noto'g'ri" }
+  }
+
+  // Hash new password
+  const hashedPassword = await bcrypt.hash(newPassword, 12)
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { password: hashedPassword }
+  })
+
+  return { success: true }
 }
