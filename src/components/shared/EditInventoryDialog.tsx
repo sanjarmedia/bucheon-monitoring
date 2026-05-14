@@ -44,10 +44,8 @@ export function EditInventoryDialog({ item }: { item: any }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Edit className="h-4 w-4" /> {t('editItem')}
-        </Button>
+      <DialogTrigger render={<Button className="gap-2" />}>
+        <Edit className="h-4 w-4" /> {t('editItem')}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

@@ -44,10 +44,8 @@ export function ManualAttendanceDialog({ users }: { users: any[] }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <CalendarClock className="h-4 w-4" /> {t('manualCheckIn') || "Qo'lda kiritish"}
-        </Button>
+      <DialogTrigger render={<Button className="gap-2" />}>
+        <CalendarClock className="h-4 w-4" /> {t('manualCheckIn') || "Qo'lda kiritish"}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
