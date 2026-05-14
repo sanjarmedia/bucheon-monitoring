@@ -57,7 +57,14 @@ export default async function InventoryDetailsPage({ params }: { params: Promise
           </div>
         </div>
         <div className="flex gap-2">
-          <EditInventoryDialog item={item} />
+          <EditInventoryDialog item={{
+            id: item.id,
+            name: item.name,
+            inventoryNumber: item.inventoryNumber,
+            serialNumber: item.serialNumber,
+            status: item.status,
+            cost: item.cost
+          }} />
           {(session?.user as any).role === 'SUPER_ADMIN' && (
             <DeleteInventoryButton id={item.id} name={item.name} />
           )}
