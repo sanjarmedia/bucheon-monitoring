@@ -5,137 +5,127 @@ import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
-import { v4 as uuidv4 } from "uuid"
 
 export async function createInventoryItem(formData: FormData) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
-
-  const name = formData.get("name") as string
-  const categoryId = formData.get("categoryId") as string
-  const inventoryNumber = formData.get("inventoryNumber") as string
-  const serialNumber = formData.get("serialNumber") as string
-  const cost = parseFloat(formData.get("cost") as string)
-  const imageFile = formData.get("image") as File | null
-
-  if (!name || !categoryId) {
-    throw new Error("Missing required fields")
-  }
-
-  let imageUrl = null
-  if (imageFile && imageFile.size > 0) {
-    const bytes = await imageFile.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    
-    const uniqueId = uuidv4()
-    const originalExtension = imageFile.name.split('.').pop() || 'png'
-    const filename = `${uniqueId}.${originalExtension}`
-    
-    const uploadDir = join(process.cwd(), "public", "uploads")
-    // Ensure directory exists
-    await mkdir(uploadDir, { recursive: true })
-    
-    const filePath = join(uploadDir, filename)
-    await writeFile(filePath, buffer)
-    imageUrl = `/uploads/${filename}`
-  }
-
-  const { InventoryService } = await import("@/services/InventoryService")
-
-  const status = (formData.get("status") as string) || "ACTIVE"
-
-  const newItem = await InventoryService.createItem({
-    name,
-    categoryId,
-    inventoryNumber: inventoryNumber || null,
-    serialNumber: serialNumber || null,
-    imageUrl: imageUrl,
-    cost: isNaN(cost) ? null : cost,
-    status: status,
-    userId: session.user.id
-  })
-
   try {
-    const { syncToGoogleSheets } = await import("@/lib/googleSheets")
-    await syncToGoogleSheets('CREATE', newItem)
-  } catch (e) {
-    console.error("Google sync error non-fatal", e)
-  }
+    const session = await auth()
+    if (!session?.user?.id) {
+      return { error: "Unauthorized" }
+    }
 
-  revalidatePath("/en/inventory")
-  revalidatePath("/uz/inventory")
-  revalidatePath("/ru/inventory")
-}
+    const name = formData.get("name") as string
+    const categoryId = formData.get("categoryId") as string
+    const inventoryNumber = formData.get("inventoryNumber") as string
+    const serialNumber = formData.get("serialNumber") as string
+    const cost = parseFloat(formData.get("cost") as string)
+    const imageFile = formData.get("image") as File | null
 
-export async function updateInventoryItem(formData: FormData) {
-  const session = await auth()
-  if (!session || (session.user as any).role !== 'SUPER_ADMIN') {
-    throw new Error("Unauthorized")
-  }
+    if (!name || !categoryId) {
+      return { error: "Missing required fields" }
+    }
 
-  const id = formData.get("id") as string
-  const name = formData.get("name") as string
-  const status = formData.get("status") as string
-  const cost = parseFloat(formData.get("cost") as string) || 0
-  const serialNumber = formData.get("serialNumber") as string
-  const inventoryNumber = formData.get("inventoryNumber") as string
-  const imageFile = formData.get("image") as File | null
-
-  const data: any = {
-    name,
-    status,
-    cost,
-    serialNumber: serialNumber || null,
-    inventoryNumber: inventoryNumber || null,
-  }
-
-  // Handle new image upload if provided
-  if (imageFile && imageFile.size > 0) {
-    try {
+    let imageUrl = null
+    if (imageFile && imageFile.size > 0) {
       const bytes = await imageFile.arrayBuffer()
       const buffer = Buffer.from(bytes)
       
-      const uniqueId = uuidv4()
-      const originalExtension = imageFile.name.split('.').pop() || 'png'
-      const filename = `${uniqueId}.${originalExtension}`
-      
+      const filename = `${Date.now()}-${imageFile.name.replace(/\s+/g, '-')}`
       const uploadDir = join(process.cwd(), "public", "uploads")
-      // Ensure directory exists
-      await mkdir(uploadDir, { recursive: true })
       
+      await mkdir(uploadDir, { recursive: true })
+      const filePath = join(uploadDir, filename)
+      await writeFile(filePath, buffer)
+      imageUrl = `/uploads/${filename}`
+    }
+
+    const { InventoryService } = await import("@/services/InventoryService")
+    const status = (formData.get("status") as string) || "ACTIVE"
+
+    const newItem = await InventoryService.createItem({
+      name,
+      categoryId,
+      inventoryNumber: inventoryNumber || null,
+      serialNumber: serialNumber || null,
+      imageUrl: imageUrl,
+      cost: isNaN(cost) ? null : cost,
+      status: status,
+      userId: session.user.id
+    })
+
+    revalidatePath("/inventory")
+    return { success: true, item: newItem }
+  } catch (error: any) {
+    console.error("Create item error:", error)
+    return { error: error.message || "Kutilmagan xato yuz berdi" }
+  }
+}
+
+export async function updateInventoryItem(formData: FormData) {
+  try {
+    const session = await auth()
+    if (!session) return { error: "Sessiya topilmadi" }
+
+    const id = formData.get("id") as string
+    const name = formData.get("name") as string
+    const status = formData.get("status") as string
+    const costStr = formData.get("cost") as string
+    const cost = costStr ? parseFloat(costStr) : null
+    const serialNumber = formData.get("serialNumber") as string
+    const inventoryNumber = formData.get("inventoryNumber") as string
+    const imageFile = formData.get("image") as File | null
+
+    if (!id) return { error: "ID topilmadi" }
+
+    const data: any = {
+      name,
+      status,
+      cost,
+      serialNumber: serialNumber || null,
+      inventoryNumber: inventoryNumber || null,
+    }
+
+    if (imageFile && imageFile.size > 0) {
+      const bytes = await imageFile.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      
+      const filename = `${Date.now()}-${imageFile.name.replace(/\s+/g, '-')}`
+      const uploadDir = join(process.cwd(), "public", "uploads")
+      
+      await mkdir(uploadDir, { recursive: true })
       const filePath = join(uploadDir, filename)
       await writeFile(filePath, buffer)
       data.imageUrl = `/uploads/${filename}`
-    } catch (err) {
-      console.error("Image update error:", err)
     }
+
+    await prisma.inventoryItem.update({
+      where: { id },
+      data
+    })
+
+    revalidatePath("/inventory")
+    revalidatePath(`/inventory/${id}`)
+    
+    return { success: true }
+  } catch (error: any) {
+    console.error("Update inventory error:", error)
+    return { error: error.message || "Tahrirlashda xato yuz berdi" }
   }
-
-  await prisma.inventoryItem.update({
-    where: { id },
-    data
-  })
-
-  const paths = [
-    "/en/inventory", "/uz/inventory", "/ru/inventory",
-    `/en/inventory/${id}`, `/uz/inventory/${id}`, `/ru/inventory/${id}`
-  ]
-  paths.forEach(p => revalidatePath(p))
 }
 
 export async function deleteInventoryItem(id: string) {
-  const session = await auth()
-  if (!session || (session.user as any).role !== 'SUPER_ADMIN') {
-    throw new Error("Unauthorized")
+  try {
+    const session = await auth()
+    if (!session || (session.user as any).role !== 'SUPER_ADMIN') {
+      return { error: "Unauthorized" }
+    }
+
+    await prisma.inventoryItem.delete({
+      where: { id }
+    })
+
+    revalidatePath("/inventory")
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message }
   }
-
-  await prisma.inventoryItem.delete({
-    where: { id }
-  })
-
-  revalidatePath("/en/inventory")
-  revalidatePath("/uz/inventory")
-  revalidatePath("/ru/inventory")
 }

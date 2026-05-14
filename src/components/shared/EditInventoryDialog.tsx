@@ -32,11 +32,11 @@ export function EditInventoryDialog({ item }: { item: any }) {
 
   async function handleSubmit(formData: FormData) {
     startTransition(async () => {
-      try {
-        await updateInventoryItem(formData)
+      const result = await updateInventoryItem(formData)
+      if (result?.error) {
+        alert(result.error)
+      } else {
         setOpen(false)
-      } catch (error: any) {
-        alert(error.message)
       }
     })
   }
