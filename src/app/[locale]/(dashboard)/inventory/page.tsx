@@ -224,11 +224,13 @@ export default async function InventoryPage({
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10">№</TableHead>
+                <TableHead className="w-16">{common('photo') || "Rasm"}</TableHead>
+                <TableHead className="w-32">{t('inventoryNumber')}</TableHead>
                 <TableHead>{t('name')}</TableHead>
                 <TableHead>{t('category')}</TableHead>
+                <TableHead>{common('status')}</TableHead>
                 <TableHead>{t('room')}</TableHead>
                 <TableHead>{t('responsible')}</TableHead>
-                <TableHead>{common('status')}</TableHead>
                 <TableHead className="text-right">{common('actions')}</TableHead>
               </TableRow>
             </TableHeader>
@@ -314,7 +316,7 @@ export default async function InventoryPage({
           if (searchParams.faculty) params.set("faculty", searchParams.faculty)
           if (searchParams.perPage) params.set("perPage", searchParams.perPage)
           params.set("page", String(page))
-          return `/inventory?${params.toString()}`
+          return `?${params.toString()}`
         }
 
         const pages = Array.from({ length: totalPages }, (_, i) => i + 1)

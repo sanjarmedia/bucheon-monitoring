@@ -35,8 +35,8 @@ async function main() {
   }
 
   const branchList = await prisma.branch.findMany()
-  const chilanzar = branchList.find(b => b.name === 'Chilonzor Filiali')
-  const itCampus = branchList.find(b => b.name === 'IT Campus')
+  const chilanzar = branchList.find((b: any) => b.name === 'Chilonzor Filiali')
+  const itCampus = branchList.find((b: any) => b.name === 'IT Campus')
 
   // 3. Binolar (Buildings)
   if (chilanzar) {

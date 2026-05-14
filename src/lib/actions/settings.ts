@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 
 export async function saveSystemSettings(formData: FormData) {
   // Barcha kutilgan kalitlar ro'yxati (ayniqsa switch/checkboxlar uchun)
-  const keys = ['tg_enabled', 'tg_token', 'tg_chat_id', 'gs_enabled', 'gs_id', 'cctv_url', 'cctv_protocol']
+  const keys = ['tg_enabled', 'tg_token', 'tg_chat_id', 'gs_enabled', 'gs_id', 'cctv_url', 'cctv_protocol', 'work_start_time']
   
   for (const key of keys) {
     const value = formData.get(key)
