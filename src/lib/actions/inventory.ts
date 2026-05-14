@@ -79,24 +79,48 @@ export async function updateInventoryItem(formData: FormData) {
   const cost = parseFloat(formData.get("cost") as string) || 0
   const serialNumber = formData.get("serialNumber") as string
   const inventoryNumber = formData.get("inventoryNumber") as string
+  const imageFile = formData.get("image") as File | null
+
+  const data: any = {
+    name,
+    status,
+    cost,
+    serialNumber: serialNumber || null,
+    inventoryNumber: inventoryNumber || null,
+  }
+
+  // Handle new image upload if provided
+  if (imageFile && imageFile.size > 0) {
+    try {
+      const bytes = await imageFile.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      const { v4: uuidv4 } = require('uuid')
+      const { join } = require('path')
+      const { writeFile } = require('fs/promises')
+      
+      const uniqueId = uuidv4()
+      const originalExtension = imageFile.name.split('.').pop() || 'png'
+      const filename = `${uniqueId}.${originalExtension}`
+      const uploadDir = join(process.cwd(), "public", "uploads")
+      const filePath = join(uploadDir, filename)
+      
+      await writeFile(filePath, buffer)
+      data.imageUrl = `/uploads/${filename}`
+    } catch (err) {
+      console.error("Image update error:", err)
+    }
+  }
 
   await prisma.inventoryItem.update({
     where: { id },
-    data: {
-      name,
-      status,
-      cost,
-      serialNumber: serialNumber || null,
-      inventoryNumber: inventoryNumber || null,
-    }
+    data
   })
 
-  revalidatePath("/en/inventory")
-  revalidatePath("/uz/inventory")
-  revalidatePath("/ru/inventory")
-  revalidatePath(`/en/inventory/${id}`)
-  revalidatePath(`/uz/inventory/${id}`)
-  revalidatePath(`/ru/inventory/${id}`)
+  const paths = [
+    "/en/inventory", "/uz/inventory", "/ru/inventory",
+    `/en/inventory/${id}`, `/uz/inventory/${id}`, `/ru/inventory/${id}`
+  ]
+  paths.forEach(p => revalidatePath(p))
 }
 
 export async function deleteInventoryItem(id: string) {

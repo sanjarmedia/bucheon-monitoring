@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, Ticket, Users, AlertCircle } from "lucide-react"
+import { Package, Ticket, Users, AlertCircle, Clock } from "lucide-react"
 import { prisma } from "@/lib/prisma"
 import { getTranslations } from "next-intl/server"
 
@@ -26,6 +26,30 @@ export default async function DashboardPage() {
     { title: t('active_tickets'), value: openTickets.toString(), icon: Ticket, description: "Unresolved support tickets" },
     { title: "Items in Repair", value: itemsInRepair.toString(), icon: AlertCircle, description: "Hardware requiring maintenance" }
   ]
+
+  // Fetch last 7 days ticket counts for chart
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() - (6 - i))
+    d.setHours(0, 0, 0, 0)
+    return d
+  })
+
+  const chartData = await Promise.all(last7Days.map(async (date) => {
+    const nextDay = new Date(date)
+    nextDay.setDate(date.getDate() + 1)
+    const count = await prisma.ticket.count({
+      where: {
+        createdAt: {
+          gte: date,
+          lt: nextDay
+        }
+      }
+    })
+    return { date: date.toLocaleDateString('uz-UZ', { weekday: 'short' }), count }
+  }))
+
+  const maxCount = Math.max(...chartData.map(d => d.count), 1)
 
   // Fetch recent activity
   const [invHistory, ticketHistory] = await Promise.all([
@@ -68,12 +92,12 @@ export default async function DashboardPage() {
         {stats.map((stat, i) => {
           const Icon = stat.icon
           return (
-            <Card key={i} className="hover:shadow-lg transition-shadow border-none shadow-md">
+            <Card key={i} className="hover:shadow-lg transition-all border-none shadow-md group">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-medium opacity-70">
                   {stat.title}
                 </CardTitle>
-                <Icon className="h-4 w-4 text-muted-foreground" />
+                <Icon className="h-4 w-4 text-primary group-hover:scale-125 transition-transform" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stat.value}</div>
@@ -85,40 +109,51 @@ export default async function DashboardPage() {
       </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4 overflow-hidden border-none shadow-xl bg-gradient-to-br from-white to-secondary/20 dark:from-card dark:to-secondary/5">
+        <Card className="col-span-4 overflow-hidden border-none shadow-xl bg-gradient-to-br from-white to-primary/5 dark:from-card dark:to-primary/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Ticket className="h-5 w-5 text-primary" /> {t('active_tickets')} Trends
+              <Ticket className="h-5 w-5 text-primary" /> {t('active_tickets')} {t('trends') || "Trends"}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 pb-4">
-            <div className="h-[300px] w-full px-4">
-               <div className="flex items-end justify-between h-full gap-2 pb-6">
-                 {[40, 70, 45, 90, 65, 80, 50].map((h, i) => (
-                   <div key={i} className="flex-1 bg-primary/20 rounded-t-lg relative group transition-all hover:bg-primary/40" style={{ height: `${h}%` }}>
-                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                        {h}
-                      </div>
-                   </div>
-                 ))}
+            <div className="h-[300px] w-full px-6">
+               <div className="flex items-end justify-between h-full gap-3 pb-8">
+                 {chartData.map((d, i) => {
+                   const height = (d.count / maxCount) * 100
+                   return (
+                     <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                       <div 
+                         className="w-full bg-primary/20 rounded-t-lg relative group transition-all hover:bg-primary/50 cursor-pointer" 
+                         style={{ height: `${Math.max(height, 5)}%` }}
+                       >
+                          <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow-lg z-20">
+                            {d.count}
+                          </div>
+                       </div>
+                       <span className="text-[10px] font-bold text-muted-foreground uppercase">{d.date}</span>
+                     </div>
+                   )
+                 })}
                </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="col-span-3 border-none shadow-xl">
+        <Card className="col-span-3 border-none shadow-xl bg-white/50 backdrop-blur-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
                <AlertCircle className="h-5 w-5 text-orange-500" /> {t('recent_activity')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-6">
               {recentActivity.map((act) => (
-                <div key={act.id} className="flex items-start gap-3 border-l-2 border-primary/30 pl-3 py-1">
+                <div key={act.id} className="flex items-start gap-4 border-l-2 border-primary/20 pl-4 py-1 hover:border-primary transition-colors group">
                   <div className="space-y-1">
-                    <div className="text-xs font-bold">{act.title}</div>
-                    <div className="text-[10px] text-muted-foreground line-clamp-1">{act.desc}</div>
-                    <div className="text-[9px] font-mono opacity-50">{act.time.toLocaleTimeString()}</div>
+                    <div className="text-sm font-bold group-hover:text-primary transition-colors">{act.title}</div>
+                    <div className="text-xs text-muted-foreground line-clamp-1">{act.desc}</div>
+                    <div className="text-[10px] font-mono opacity-50 flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> {act.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
                   </div>
                 </div>
               ))}

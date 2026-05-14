@@ -92,6 +92,11 @@ export function EditInventoryDialog({ item }: { item: any }) {
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="image">{t('itemImage') || "Jihoz rasmi"}</Label>
+            <Input id="image" name="image" type="file" accept="image/*" />
+          </div>
+
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending ? common('loading') : common('save')}

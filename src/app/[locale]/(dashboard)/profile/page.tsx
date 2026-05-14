@@ -7,15 +7,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Image as ImageIcon, User, Mail, Shield, Save } from "lucide-react"
 import { ProfileForm } from "@/components/shared/ProfileForm"
+import { ChangePasswordForm } from "@/components/shared/ChangePasswordForm"
+
+import { auth } from "@/auth"
 
 export default async function ProfilePage() {
   const t = await getTranslations("Employees")
   const common = await getTranslations("Common")
   const inv = await getTranslations("Inventory")
 
-  // For demo, get the first Super Admin
-  const user = await prisma.user.findFirst({
-    where: { role: 'SUPER_ADMIN' }
+  const session = await auth()
+  if (!session?.user?.id) return <div>Unauthorized</div>
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id }
   })
 
   if (!user) return <div>User not found</div>
@@ -63,6 +68,20 @@ export default async function ProfilePage() {
             <ProfileForm user={user} />
           </CardContent>
         </Card>
+
+        <div className="md:col-start-2 md:col-span-2">
+          <Card className="border-red-100 bg-red-50/10">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-600">
+                <Shield className="h-5 w-5" /> Xavfsizlik
+              </CardTitle>
+              <CardDescription>Profil parolini o'zgartirish</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChangePasswordForm />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
