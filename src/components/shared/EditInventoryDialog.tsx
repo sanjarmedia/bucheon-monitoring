@@ -31,6 +31,12 @@ export function EditInventoryDialog({ item }: { item: any }) {
   const [isPending, startTransition] = useTransition()
 
   async function handleSubmit(formData: FormData) {
+    const imageFile = formData.get("image") as File | null
+    if (imageFile && imageFile.size > 4 * 1024 * 1024) {
+      alert("Rasm hajmi juda katta (maksimal 4MB). Iltimos, kichikroq rasm tanlang.")
+      return
+    }
+
     startTransition(async () => {
       const result = await updateInventoryItem(formData)
       if (result?.error) {
