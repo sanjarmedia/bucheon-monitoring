@@ -3,6 +3,9 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
+import { writeFile, mkdir } from "fs/promises"
+import { join } from "path"
+import { v4 as uuidv4 } from "uuid"
 
 export async function createInventoryItem(formData: FormData) {
   const session = await auth()
@@ -25,17 +28,16 @@ export async function createInventoryItem(formData: FormData) {
   if (imageFile && imageFile.size > 0) {
     const bytes = await imageFile.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const { v4: uuidv4 } = require('uuid')
-    const { join } = require('path')
-    const { writeFile } = require('fs/promises')
     
     const uniqueId = uuidv4()
     const originalExtension = imageFile.name.split('.').pop() || 'png'
     const filename = `${uniqueId}.${originalExtension}`
     
     const uploadDir = join(process.cwd(), "public", "uploads")
-    const filePath = join(uploadDir, filename)
+    // Ensure directory exists
+    await mkdir(uploadDir, { recursive: true })
     
+    const filePath = join(uploadDir, filename)
     await writeFile(filePath, buffer)
     imageUrl = `/uploads/${filename}`
   }
@@ -94,16 +96,16 @@ export async function updateInventoryItem(formData: FormData) {
     try {
       const bytes = await imageFile.arrayBuffer()
       const buffer = Buffer.from(bytes)
-      const { v4: uuidv4 } = require('uuid')
-      const { join } = require('path')
-      const { writeFile } = require('fs/promises')
       
       const uniqueId = uuidv4()
       const originalExtension = imageFile.name.split('.').pop() || 'png'
       const filename = `${uniqueId}.${originalExtension}`
-      const uploadDir = join(process.cwd(), "public", "uploads")
-      const filePath = join(uploadDir, filename)
       
+      const uploadDir = join(process.cwd(), "public", "uploads")
+      // Ensure directory exists
+      await mkdir(uploadDir, { recursive: true })
+      
+      const filePath = join(uploadDir, filename)
       await writeFile(filePath, buffer)
       data.imageUrl = `/uploads/${filename}`
     } catch (err) {
