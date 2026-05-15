@@ -19,6 +19,8 @@ export async function transferInventoryItem(formData: FormData) {
     const item = await prisma.inventoryItem.findUnique({ where: { id: itemId } })
     if (!item) return { error: "Item not found" }
 
+    const userId = session.user.id as string
+
     // Log the transfer history
     await prisma.inventoryHistory.create({
       data: {
@@ -29,7 +31,7 @@ export async function transferInventoryItem(formData: FormData) {
         toRoomId: roomId,
         fromEmployeeId: item.assignedToId,
         toEmployeeId: assignedToId || null,
-        performedById: session.user.id!
+        performedById: userId
       }
     })
 
@@ -65,6 +67,8 @@ export async function bulkTransferInventoryItems(itemIds: string[], roomId: stri
       where: { id: { in: itemIds } }
     })
 
+    const userId = session.user.id as string
+
     // Transaction for safe bulk transfer
     await prisma.$transaction(async (tx) => {
       for (const item of items) {
@@ -77,7 +81,7 @@ export async function bulkTransferInventoryItems(itemIds: string[], roomId: stri
             toRoomId: roomId,
             fromEmployeeId: item.assignedToId,
             toEmployeeId: assignedToId || null,
-            performedById: session.user.id!
+            performedById: userId
           }
         })
       }
