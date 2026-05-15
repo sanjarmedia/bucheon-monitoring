@@ -30,10 +30,6 @@ import { SelectionCheckbox, SelectAllCheckbox } from "@/components/shared/Select
 import { BulkTransferAction } from "@/components/shared/BulkTransferAction"
 
 export default async function InventoryPage({
-//... skipping unchanged part, I will do this precisely using lines.
-
-
-export default async function InventoryPage({
   searchParams
 }: {
   searchParams: Promise<{ q?: string, category?: string, status?: string, faculty?: string, page?: string, perPage?: string }>
