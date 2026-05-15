@@ -150,7 +150,7 @@ export default async function LocationsPage() {
                           {/* 3D Isometric Viewer */}
                           {building.floors.length > 0 && (
                             <div className="mb-8 rounded-xl overflow-hidden shadow-inner bg-white/40 border p-1">
-                              <IsometricBuilding building={building as any} categories={categories} />
+                              <IsometricBuilding building={JSON.parse(JSON.stringify(building))} categories={categories.map(c => ({ id: c.id, name: c.name }))} />
                             </div>
                           )}
 

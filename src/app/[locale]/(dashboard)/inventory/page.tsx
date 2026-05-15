@@ -33,11 +33,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
+import { AddInventoryDialog } from "@/components/shared/AddInventoryDialog"
+import { ImportInventoryDialog } from "@/components/shared/ImportInventoryDialog"
+
 export default async function InventoryPage({
   searchParams
 }: {
-  searchParams: { q?: string, category?: string, status?: string, faculty?: string, page?: string, perPage?: string }
+  searchParams: Promise<{ q?: string, category?: string, status?: string, faculty?: string, page?: string, perPage?: string }>
 }) {
+  const resolvedSearchParams = await searchParams
   const t = await getTranslations("Inventory")
   const common = await getTranslations("Common")
   const loc = await getTranslations("Locations")
@@ -45,11 +49,11 @@ export default async function InventoryPage({
 
   const cookieStore = await cookies()
   const branchId = cookieStore.get("selected_branch")?.value || "ALL"
-  const currentPage = parseInt(searchParams.page || "1", 10)
-  const itemsPerPage = parseInt(searchParams.perPage || "25", 10)
+  const currentPage = parseInt(resolvedSearchParams.page || "1", 10)
+  const itemsPerPage = parseInt(resolvedSearchParams.perPage || "25", 10)
 
   const { items, total, totalPages, perPage } = await InventoryService.getItems({
-    ...searchParams,
+    ...resolvedSearchParams,
     branchId,
     page: currentPage,
     perPage: itemsPerPage,
@@ -67,97 +71,8 @@ export default async function InventoryPage({
           </Button>
         </a>
 
-          
-          <Dialog>
-            <DialogTrigger render={<Button variant="outline" className="gap-2 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 border-green-200" />}>
-              <Upload className="h-4 w-4" /> {t("sync")}
-            </DialogTrigger>
-
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t('importTitle')}</DialogTitle>
-                <DialogDescription>
-                  {t('importDesc')}
-                </DialogDescription>
-              </DialogHeader>
-              <form action={importInventoryExcel} className="space-y-4">
-                <div className="space-y-2">
-                  <Input type="file" name="file" accept=".xlsx,.xls" required />
-                </div>
-                <DialogFooter>
-                  <Button type="submit">{t('importBtn')}</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog>
-            <DialogTrigger render={<Button className="gap-2" />}>
-              <Plus className="h-4 w-4" /> {t("addItem")}
-            </DialogTrigger>
-
-            <DialogContent className="max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{t('addItem')}</DialogTitle>
-                <DialogDescription>{t('subtitle')}</DialogDescription>
-              </DialogHeader>
-              <form action={async (formData) => { await createInventoryItem(formData) }} className="space-y-4" encType="multipart/form-data">
-                <div className="space-y-2">
-                  <Label htmlFor="name">{t('name')}</Label>
-                  <Input id="name" name="name" placeholder={t('name')} required />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="categoryId">{t('category')}</Label>
-                    <Select name="categoryId" required>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('category')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="status">{common('status')}</Label>
-                    <Select name="status" defaultValue="ACTIVE">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ACTIVE">ACTIVE</SelectItem>
-                        <SelectItem value="IN_REPAIR">IN REPAIR</SelectItem>
-                        <SelectItem value="WRITTEN_OFF">WRITTEN OFF</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="image">{t('itemImage')}</Label>
-                  <Input id="image" name="image" type="file" accept="image/*" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="inventoryNumber">{t('inventoryNumber')}</Label>
-                  <Input id="inventoryNumber" name="inventoryNumber" placeholder="INV-XXXX" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="serialNumber">{t('serialNumber')}</Label>
-                  <Input id="serialNumber" name="serialNumber" placeholder="SN-XXXX" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cost">{t('costLabel')}</Label>
-                  <Input id="cost" name="cost" type="number" step="0.01" />
-                </div>
-                <DialogFooter>
-                  <Button type="submit">{t('saveItem')}</Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+        <ImportInventoryDialog />
+        <AddInventoryDialog categories={categories} />
       </PageHeader>
 
       <InventoryFilters categories={categories} />

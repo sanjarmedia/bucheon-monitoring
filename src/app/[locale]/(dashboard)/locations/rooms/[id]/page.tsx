@@ -221,7 +221,7 @@ export default async function RoomDetailsPage({ params }: { params: Promise<{ id
                 <Package className="h-5 w-5 text-primary" />
                 {t('inventory')}
               </div>
-              <RoomInventoryManager roomId={room.id} categories={categories} />
+              <RoomInventoryManager roomId={room.id} categories={categories.map(c => ({ id: c.id, name: c.name }))} />
             </CardTitle>
             <CardDescription>{t('totalInventory')}: {inventoryCount}</CardDescription>
           </CardHeader>

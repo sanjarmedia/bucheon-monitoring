@@ -63,7 +63,7 @@ export default async function AttendancePage({ params }: { params: Promise<{ loc
         description={t('title')}
       >
         <div className="flex gap-2">
-          <ManualAttendanceDialog users={users} />
+          <ManualAttendanceDialog users={users.map(u => ({ id: u.id, fullName: u.fullName, role: u.role }))} />
           <Link href="/attendance/leaves">
             <Button variant="outline">{t('leaves')}</Button>
           </Link>

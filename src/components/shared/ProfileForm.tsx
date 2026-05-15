@@ -22,6 +22,11 @@ export function ProfileForm({ user }: { user: any }) {
   return (
     <form 
       action={async (formData) => {
+        const imageFile = formData.get("image") as File | null
+        if (imageFile && imageFile.size > 4 * 1024 * 1024) {
+          alert("Rasm hajmi juda katta (maksimal 4MB). Iltimos, kichikroq rasm tanlang.")
+          return
+        }
         await updateProfile(formData)
         setIsDirty(false)
       }} 
