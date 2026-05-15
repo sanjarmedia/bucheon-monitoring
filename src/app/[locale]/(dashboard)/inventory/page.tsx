@@ -23,18 +23,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cookies } from "next/headers"
 import { Link } from "@/i18n/routing"
 import { getTranslations } from "next-intl/server"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-
 import { AddInventoryDialog } from "@/components/shared/AddInventoryDialog"
 import { ImportInventoryDialog } from "@/components/shared/ImportInventoryDialog"
+import { SelectionProvider } from "@/components/shared/SelectionContext"
+import { SelectionCheckbox, SelectAllCheckbox } from "@/components/shared/SelectionCheckbox"
+import { BulkTransferAction } from "@/components/shared/BulkTransferAction"
+
+export default async function InventoryPage({
+//... skipping unchanged part, I will do this precisely using lines.
+
 
 export default async function InventoryPage({
   searchParams
@@ -45,7 +42,28 @@ export default async function InventoryPage({
   const t = await getTranslations("Inventory")
   const common = await getTranslations("Common")
   const loc = await getTranslations("Locations")
-  const categories = await prisma.category.findMany()
+  
+  const [categories, rooms, users] = await Promise.all([
+    prisma.category.findMany(),
+    prisma.room.findMany({
+      select: {
+        id: true,
+        number: true,
+        faculty: true,
+        floor: {
+          select: {
+            number: true,
+            building: { select: { name: true, branch: { select: { name: true } } } }
+          }
+        }
+      },
+      orderBy: { number: 'asc' }
+    }),
+    prisma.user.findMany({
+      select: { id: true, fullName: true, role: true },
+      orderBy: { fullName: 'asc' }
+    })
+  ])
 
   const cookieStore = await cookies()
   const branchId = cookieStore.get("selected_branch")?.value || "ALL"
@@ -59,50 +77,60 @@ export default async function InventoryPage({
     perPage: itemsPerPage,
   })
 
+  // Get all item IDs currently visible for the "Select All" feature
+  const visibleItemIds = items.map(item => item.id)
+
   return (
-    <div className="space-y-6">
-      <PageHeader 
-        title={t("title")} 
-        description={t("subtitle")}
-      >
-        <a href="/api/export-inventory" download>
-          <Button variant="outline" className="gap-2">
-            <Download className="h-4 w-4" /> {t("export")}
-          </Button>
-        </a>
+    <SelectionProvider>
+      <div className="space-y-6">
+        <PageHeader 
+          title={t("title")} 
+          description={t("subtitle")}
+        >
+          <a href="/api/export-inventory" download>
+            <Button variant="outline" className="gap-2">
+              <Download className="h-4 w-4" /> {t("export")}
+            </Button>
+          </a>
 
-        <ImportInventoryDialog />
-        <AddInventoryDialog categories={categories} />
-      </PageHeader>
+          <ImportInventoryDialog />
+          <AddInventoryDialog categories={categories} />
+        </PageHeader>
 
-      <InventoryFilters categories={categories} />
+        <InventoryFilters categories={categories} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('title')}</CardTitle>
-          <CardDescription>{t('subtitle')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-10">№</TableHead>
-                <TableHead className="w-16">{common('photo') || "Rasm"}</TableHead>
-                <TableHead className="w-32">{t('inventoryNumber')}</TableHead>
-                <TableHead>{t('name')}</TableHead>
-                <TableHead>{t('category')}</TableHead>
-                <TableHead>{common('status')}</TableHead>
-                <TableHead>{t('room')}</TableHead>
-                <TableHead>{t('responsible')}</TableHead>
-                <TableHead className="text-right">{common('actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item, index) => (
-                <TableRow key={item.id} className="group">
-                  <TableCell className="text-center text-muted-foreground text-xs font-mono w-[48px]">
-                    {(currentPage - 1) * perPage + index + 1}
-                  </TableCell>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('title')}</CardTitle>
+            <CardDescription>{t('subtitle')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-10">
+                    <SelectAllCheckbox ids={visibleItemIds} />
+                  </TableHead>
+                  <TableHead className="w-10">№</TableHead>
+                  <TableHead className="w-16">{common('photo') || "Rasm"}</TableHead>
+                  <TableHead className="w-32">{t('inventoryNumber')}</TableHead>
+                  <TableHead>{t('name')}</TableHead>
+                  <TableHead>{t('category')}</TableHead>
+                  <TableHead>{common('status')}</TableHead>
+                  <TableHead>{t('room')}</TableHead>
+                  <TableHead>{t('responsible')}</TableHead>
+                  <TableHead className="text-right">{common('actions')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((item, index) => (
+                  <TableRow key={item.id} className="group hover:bg-muted/50 transition-colors">
+                    <TableCell>
+                      <SelectionCheckbox id={item.id} />
+                    </TableCell>
+                    <TableCell className="text-center text-muted-foreground text-xs font-mono w-[48px]">
+                      {(currentPage - 1) * perPage + index + 1}
+                    </TableCell>
                   <TableCell>
                     {(item as any).imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -175,6 +203,9 @@ export default async function InventoryPage({
         currentPage={currentPage}
         perPage={perPage}
       />
+      
+      <BulkTransferAction rooms={rooms} users={users} />
     </div>
+  </SelectionProvider>
   )
 }

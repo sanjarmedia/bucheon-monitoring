@@ -11,22 +11,52 @@ import { auth } from "@/auth"
 import { EditInventoryDialog } from "@/components/shared/EditInventoryDialog"
 import { DeleteInventoryButton } from "@/components/shared/DeleteInventoryButton"
 
+import { TransferInventoryDialog } from "@/components/shared/TransferInventoryDialog"
+
 export default async function InventoryDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
   const { id } = await params
-  const item = await prisma.inventoryItem.findUnique({
-    where: { id },
-    include: {
-      category: true,
-      room: {
-        include: { floor: { include: { building: { include: { branch: true } } } } }
-      },
-      assignedTo: true,
-      history: {
-        orderBy: { createdAt: 'desc' }
+  
+  const [item, rooms, users] = await Promise.all([
+    prisma.inventoryItem.findUnique({
+      where: { id },
+      include: {
+        category: true,
+        room: {
+          include: { floor: { include: { building: { include: { branch: true } } } } }
+        },
+        assignedTo: true,
+        history: {
+          orderBy: { createdAt: 'desc' }
+        }
       }
-    }
-  })
+    }),
+    prisma.room.findMany({
+      select: {
+        id: true,
+        number: true,
+        faculty: true,
+        floor: {
+          select: {
+            number: true,
+            building: {
+              select: {
+                name: true,
+                branch: {
+                  select: { name: true }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: { number: 'asc' }
+    }),
+    prisma.user.findMany({
+      select: { id: true, fullName: true, role: true },
+      orderBy: { fullName: 'asc' }
+    })
+  ])
 
   if (!item) {
     notFound()
@@ -57,6 +87,7 @@ export default async function InventoryDetailsPage({ params }: { params: Promise
           </div>
         </div>
         <div className="flex gap-2">
+          <TransferInventoryDialog itemIds={[item.id]} rooms={rooms} users={users} />
           <EditInventoryDialog item={{
             id: item.id,
             name: item.name,
