@@ -28,15 +28,9 @@ export async function createInventoryItem(formData: FormData) {
     if (imageFile && imageFile.size > 0) {
       const bytes = await imageFile.arrayBuffer()
       const buffer = Buffer.from(bytes)
-      
-      const filename = `${Date.now()}-${imageFile.name.replace(/\s+/g, '-')}`
-      const uploadDir = join(process.cwd(), "public", "uploads")
-      
-      await mkdir(uploadDir, { recursive: true })
-      const filePath = join(uploadDir, filename)
-      await writeFile(filePath, buffer)
-      imageUrl = `/uploads/${filename}`
+      imageUrl = `data:${imageFile.type};base64,${buffer.toString('base64')}`
     }
+
 
     const { InventoryService } = await import("@/services/InventoryService")
     const status = (formData.get("status") as string) || "ACTIVE"
@@ -87,14 +81,7 @@ export async function updateInventoryItem(formData: FormData) {
     if (imageFile && imageFile.size > 0) {
       const bytes = await imageFile.arrayBuffer()
       const buffer = Buffer.from(bytes)
-      
-      const filename = `${Date.now()}-${imageFile.name.replace(/\s+/g, '-')}`
-      const uploadDir = join(process.cwd(), "public", "uploads")
-      
-      await mkdir(uploadDir, { recursive: true })
-      const filePath = join(uploadDir, filename)
-      await writeFile(filePath, buffer)
-      data.imageUrl = `/uploads/${filename}`
+      data.imageUrl = `data:${imageFile.type};base64,${buffer.toString('base64')}`
     }
 
     await prisma.inventoryItem.update({

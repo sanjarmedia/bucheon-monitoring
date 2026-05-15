@@ -30,14 +30,7 @@ export async function createEmployee(formData: FormData) {
   if (image && image.size > 0) {
     const bytes = await image.arrayBuffer()
     const buffer = Buffer.from(bytes)
-
-    const uploadDir = join(process.cwd(), "public", "uploads", "users")
-    await mkdir(uploadDir, { recursive: true })
-
-    const filename = `${Date.now()}-${image.name}`
-    const path = join(uploadDir, filename)
-    await writeFile(path, buffer)
-    imageUrl = `/uploads/users/${filename}`
+    imageUrl = `data:${image.type};base64,${buffer.toString('base64')}`
   }
 
   await prisma.user.create({
@@ -73,12 +66,7 @@ export async function updateProfile(formData: FormData) {
   if (image && image.size > 0) {
     const bytes = await image.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const uploadDir = join(process.cwd(), "public", "uploads", "users")
-    await mkdir(uploadDir, { recursive: true })
-    const filename = `${Date.now()}-${image.name}`
-    const path = join(uploadDir, filename)
-    await writeFile(path, buffer)
-    data.imageUrl = `/uploads/users/${filename}`
+    data.imageUrl = `data:${image.type};base64,${buffer.toString('base64')}`
   }
 
   await prisma.user.update({
