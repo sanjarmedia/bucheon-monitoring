@@ -29,7 +29,7 @@ export async function transferInventoryItem(formData: FormData) {
         toRoomId: roomId,
         fromEmployeeId: item.assignedToId,
         toEmployeeId: assignedToId || null,
-        performedById: session.user.id
+        performedById: session.user.id!
       }
     })
 
@@ -77,7 +77,7 @@ export async function bulkTransferInventoryItems(itemIds: string[], roomId: stri
             toRoomId: roomId,
             fromEmployeeId: item.assignedToId,
             toEmployeeId: assignedToId || null,
-            performedById: session.user.id
+            performedById: session.user.id!
           }
         })
       }
