@@ -86,57 +86,63 @@ export function TransferInventoryDialog({
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{itemIds.length > 1 ? `Bir nechta jihozlarni ko'chirish (${itemIds.length})` : "Jihozni boshqa joyga o'tkazish"}</DialogTitle>
+          <DialogTitle>{itemIds.length > 1 ? t('transferMultiple', { count: itemIds.length }) : t('transferTitle')}</DialogTitle>
           <DialogDescription>
-            Jihoz uchun yangi xona va javobgar shaxsni belgilang.
+            {t('transferDesc')}
           </DialogDescription>
         </DialogHeader>
 
         <form action={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="roomId">Yangi joylashuv (Xona) <span className="text-red-500">*</span></Label>
+            <Label htmlFor="roomId">{t('newLocation')} <span className="text-red-500">*</span></Label>
             <Select name="roomId" required>
-              <SelectTrigger>
-                <SelectValue placeholder="Xonani tanlang..." />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t('selectRoom')} />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
-                {rooms.map(room => (
-                  <SelectItem key={room.id} value={room.id}>
-                    {room.floor?.building?.branch?.name} • {room.floor?.building?.name} • {room.floor?.number}-qavat • {room.number}-xona {room.faculty ? `(${room.faculty})` : ''}
-                  </SelectItem>
-                ))}
+                {rooms.map(room => {
+                  const roomLabel = `${room.floor?.building?.branch?.name} • ${room.floor?.building?.name} • ${room.floor?.number}-qavat • ${room.number}-xona ${room.faculty ? `(${room.faculty})` : ''}`.trim()
+                  return (
+                    <SelectItem key={room.id} value={room.id}>
+                      {roomLabel}
+                    </SelectItem>
+                  )
+                })}
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="assignedToId">Yangi mas'ul shaxs (Ixtiyoriy)</Label>
+            <Label htmlFor="assignedToId">{t('newResponsible')}</Label>
             <Select name="assignedToId">
-              <SelectTrigger>
-                <SelectValue placeholder="Mas'ul shaxsni tanlang..." />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t('selectResponsible')} />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
-                <SelectItem value="unassigned" className="italic text-muted-foreground">-- Hech kim --</SelectItem>
-                {users.map(user => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.fullName} ({user.role?.replace('_', ' ')})
-                  </SelectItem>
-                ))}
+                <SelectItem value="unassigned" className="italic text-muted-foreground">{t('nobody')}</SelectItem>
+                {users.map(user => {
+                  const userLabel = `${user.fullName} ${user.role ? `(${user.role.replace('_', ' ')})` : ''}`.trim()
+                  return (
+                    <SelectItem key={user.id} value={user.id}>
+                      {userLabel}
+                    </SelectItem>
+                  )
+                })}
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="note">Izoh (Ixtiyoriy)</Label>
-            <Input id="note" name="note" placeholder="Masalan: Litsey ehtiyoji uchun o'tkazildi" />
+            <Label htmlFor="note">{t('noteLabel')}</Label>
+            <Input id="note" name="note" placeholder={t('notePlaceholder')} />
           </div>
 
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Bekor qilish
+              {common("cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? common("loading") : "Ko'chirish"}
+              {isPending ? common("loading") : t("transfer")}
             </Button>
           </DialogFooter>
         </form>
