@@ -84,6 +84,7 @@
     "unknown": "Unknown",
     "itemPhoto": "Item Photo",
     "noImage": "No image available",
+    "transfer": "Transfer",
     "lifecycle": "Lifecycle History",
     "auditTrail": "Complete audit trail of this item since it was added to the system.",
     "locationUpdate": "Location update recorded.",
