@@ -27,11 +27,14 @@ async function main() {
   ]
 
   for (const b of branches) {
-    await prisma.branch.upsert({
-      where: { name: b.name },
-      update: {},
-      create: b
+    const existing = await prisma.branch.findFirst({
+      where: { name: b.name }
     })
+    if (!existing) {
+      await prisma.branch.create({
+        data: b
+      })
+    }
   }
 
   const branchList = await prisma.branch.findMany()
@@ -42,22 +45,28 @@ async function main() {
   if (chilanzar) {
     const buildings = ['A Bino', 'B Bino', 'C Bino']
     for (const name of buildings) {
-      await prisma.building.upsert({
-        where: { name_branchId: { name, branchId: chilanzar.id } },
-        update: {},
-        create: { name, branchId: chilanzar.id }
+      const existing = await prisma.building.findFirst({
+        where: { name, branchId: chilanzar.id }
       })
+      if (!existing) {
+        await prisma.building.create({
+          data: { name, branchId: chilanzar.id }
+        })
+      }
     }
   }
 
   if (itCampus) {
     const buildings = ['Main IT Building', 'Dormitory', 'Innovation Center']
     for (const name of buildings) {
-      await prisma.building.upsert({
-        where: { name_branchId: { name, branchId: itCampus.id } },
-        update: {},
-        create: { name, branchId: itCampus.id }
+      const existing = await prisma.building.findFirst({
+        where: { name, branchId: itCampus.id }
       })
+      if (!existing) {
+        await prisma.building.create({
+          data: { name, branchId: itCampus.id }
+        })
+      }
     }
   }
 
@@ -76,11 +85,14 @@ async function main() {
   ]
 
   for (const name of categories) {
-    await prisma.category.upsert({
-      where: { name },
-      update: {},
-      create: { name }
+    const existing = await prisma.category.findFirst({
+      where: { name }
     })
+    if (!existing) {
+      await prisma.category.create({
+        data: { name }
+      })
+    }
   }
 
   // 5. Tizim sozlamalari
