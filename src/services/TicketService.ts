@@ -78,7 +78,7 @@ export class TicketService {
       await TelegramService.sendMessage(`
 <b>✅ Zayavka Yopildi! (Ticket Resolved)</b>
 <b>ID:</b> ${ticketId}
-<b>📝 Izoh:</b> ${resolutionComment || 'Izohsiz yopildi'}
+<b>📝 Izoh:</b> ${TelegramService.escapeHtml(resolutionComment || 'Izohsiz yopildi')}
       `)
     }
 

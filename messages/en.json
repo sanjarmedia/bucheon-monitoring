@@ -5,7 +5,9 @@
     "total_items": "Total Items",
     "active_tickets": "Active Requests",
     "total_rooms": "Total Rooms",
-    "recent_activity": "Recent Activity"
+    "recent_activity": "Recent Activity",
+    "trends": "Trends",
+    "no_activity": "No activity yet"
   },
   "Sidebar": {
     "dashboard": "Dashboard",
@@ -37,7 +39,9 @@
     "loading": "Loading...",
     "success": "Success",
     "error": "Error",
-    "logout": "Log out"
+    "logout": "Log out",
+    "photo": "Photo",
+    "statistics": "Statistics"
   },
   "Login": {
     "title": "Login",
@@ -170,7 +174,14 @@
     "type": "Type",
     "startDate": "Start Date",
     "endDate": "End Date",
-    "noLeaves": "No leave records found."
+    "noLeaves": "No leave records found.",
+    "manualCheckIn": "Manual Check-In",
+    "status_PRESENT": "Present",
+    "status_LATE": "Late",
+    "status_ABSENT": "Absent",
+    "status_SICK": "Sick",
+    "status_VACATION": "Vacation",
+    "status_DAY_OFF": "Day Off"
   },
   "Reports": {
     "title": "Monitoring & Analytics",
@@ -217,6 +228,10 @@
     "staff": "Staff",
     "date": "Date",
     "close": "Close",
+    "status": "Status",
+    "searchPlaceholder": "Search by description or ID...",
+    "allStatus": "All statuses",
+    "allPriority": "All priorities",
     "completeTicket": "Complete Request",
     "resolutionDesc": "Leave a comment on how the issue was resolved.",
     "resolutionComment": "Resolution Comment",
@@ -229,7 +244,13 @@
     "roleNotice": "Role can only be changed by Super Admin",
     "newPhoto": "New Profile Photo",
     "unsaved": "Unsaved changes!",
-    "confirmLeave": "You have unsaved changes. Are you sure you want to leave?"
+    "confirmLeave": "You have unsaved changes. Are you sure you want to leave?",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "updatePassword": "Update Password",
+    "passwordMismatch": "Passwords do not match",
+    "passwordSuccess": "Password updated successfully"
   },
   "Settings": {
     "title": "System Settings",
@@ -241,6 +262,7 @@
     "gsDesc": "Automatic inventory synchronization",
     "gsEnable": "Auto-sync",
     "cctvTitle": "CCTV / Monitoring",
-    "cctvDesc": "Surveillance server address"
+    "cctvDesc": "Surveillance server address",
+    "workSchedule": "Work Schedule"
   }
 }

@@ -9,6 +9,7 @@ export class LocationService {
    * Retrieves all branches with their nested buildings, floors, and rooms.
    */
   static async getFullLocationTree() {
+    // Yengil daraxt: xonalar bo'yicha faqat hisoblagichlar (5000+ inventar qatorini tortmaydi)
     return await prisma.branch.findMany({
       include: {
         buildings: {
@@ -16,11 +17,10 @@ export class LocationService {
             floors: {
               include: {
                 rooms: {
-                  include: {
-                    responsible: true,
-                    inventory: {
-                      select: { categoryId: true }
-                    },
+                  select: {
+                    id: true,
+                    number: true,
+                    faculty: true,
                     _count: {
                       select: { inventory: true, tickets: true }
                     }
@@ -31,6 +31,16 @@ export class LocationService {
           }
         }
       }
+    })
+  }
+
+  /**
+   * Header dropdown uchun faqat filial nomlari (juda yengil).
+   */
+  static async getBranchList() {
+    return await prisma.branch.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' }
     })
   }
 

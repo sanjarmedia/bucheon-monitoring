@@ -61,6 +61,10 @@ export function CreateEmployeeButton() {
             <Input id="email" name="email" type="email" placeholder="john@example.com" required />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="password">Parol</Label>
+            <Input id="password" name="password" type="password" minLength={6} placeholder="******" required />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="role">{t('role')}</Label>
             <Select name="role" defaultValue="EMPLOYEE">
               <SelectTrigger>

@@ -39,7 +39,13 @@ export default async function InventoryPage({
   const common = await getTranslations("Common")
   const loc = await getTranslations("Locations")
   
-  const [categories, rooms, users] = await Promise.all([
+  const cookieStore = await cookies()
+  const branchId = cookieStore.get("selected_branch")?.value || "ALL"
+  const currentPage = parseInt(resolvedSearchParams.page || "1", 10)
+  const itemsPerPage = parseInt(resolvedSearchParams.perPage || "25", 10)
+
+  // Hammasi parallel — Neon uzoq serverda, ketma-ketlik qimmat
+  const [categories, rooms, users, { items, total, totalPages, perPage }] = await Promise.all([
     prisma.category.findMany(),
     prisma.room.findMany({
       select: {
@@ -58,20 +64,14 @@ export default async function InventoryPage({
     prisma.user.findMany({
       select: { id: true, fullName: true, role: true },
       orderBy: { fullName: 'asc' }
+    }),
+    InventoryService.getItems({
+      ...resolvedSearchParams,
+      branchId,
+      page: currentPage,
+      perPage: itemsPerPage,
     })
   ])
-
-  const cookieStore = await cookies()
-  const branchId = cookieStore.get("selected_branch")?.value || "ALL"
-  const currentPage = parseInt(resolvedSearchParams.page || "1", 10)
-  const itemsPerPage = parseInt(resolvedSearchParams.perPage || "25", 10)
-
-  const { items, total, totalPages, perPage } = await InventoryService.getItems({
-    ...resolvedSearchParams,
-    branchId,
-    page: currentPage,
-    perPage: itemsPerPage,
-  })
 
   // Get all item IDs currently visible for the "Select All" feature
   const visibleItemIds = items.map(item => item.id)

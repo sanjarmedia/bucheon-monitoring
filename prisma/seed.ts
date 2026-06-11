@@ -21,9 +21,8 @@ async function main() {
 
   // 2. Filiallar (Branches)
   const branches = [
-    { name: 'Chilonzor Filiali' },
-    { name: 'IT Campus' },
-    { name: 'Texnikum' }
+    { name: 'Chilonzor' },
+    { name: 'IT Campus' }
   ]
 
   for (const b of branches) {
@@ -38,12 +37,13 @@ async function main() {
   }
 
   const branchList = await prisma.branch.findMany()
-  const chilanzar = branchList.find((b: any) => b.name === 'Chilonzor Filiali')
+  const chilanzar = branchList.find((b: any) => b.name === 'Chilonzor')
   const itCampus = branchList.find((b: any) => b.name === 'IT Campus')
 
   // 3. Binolar (Buildings)
+  // Chilonzor: A va B bloklar
   if (chilanzar) {
-    const buildings = ['A Bino', 'B Bino', 'C Bino']
+    const buildings = ['A Blok', 'B Blok']
     for (const name of buildings) {
       const existing = await prisma.building.findFirst({
         where: { name, branchId: chilanzar.id }
@@ -56,17 +56,21 @@ async function main() {
     }
   }
 
+  // IT Campus: bitta bino, -1 dan 6-qavatgacha
   if (itCampus) {
-    const buildings = ['Main IT Building', 'Dormitory', 'Innovation Center']
-    for (const name of buildings) {
-      const existing = await prisma.building.findFirst({
-        where: { name, branchId: itCampus.id }
+    const existing = await prisma.building.findFirst({
+      where: { name: 'IT Bino', branchId: itCampus.id }
+    })
+    if (!existing) {
+      await prisma.building.create({
+        data: {
+          name: 'IT Bino',
+          branchId: itCampus.id,
+          floors: {
+            create: [-1, 0, 1, 2, 3, 4, 5, 6].map((number: number) => ({ number }))
+          }
+        }
       })
-      if (!existing) {
-        await prisma.building.create({
-          data: { name, branchId: itCampus.id }
-        })
-      }
     }
   }
 

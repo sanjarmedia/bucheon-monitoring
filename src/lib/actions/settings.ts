@@ -2,8 +2,14 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { auth } from "@/auth"
 
 export async function saveSystemSettings(formData: FormData) {
+  const session = await auth()
+  if (!session?.user || (session.user as any).role !== 'SUPER_ADMIN') {
+    throw new Error("Unauthorized: Only Super Admins can change system settings")
+  }
+
   // Barcha kutilgan kalitlar ro'yxati (ayniqsa switch/checkboxlar uchun)
   const keys = ['tg_enabled', 'tg_token', 'tg_chat_id', 'gs_enabled', 'gs_id', 'cctv_url', 'cctv_protocol', 'work_start_time']
   

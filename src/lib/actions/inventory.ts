@@ -3,8 +3,6 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
 
 export async function createInventoryItem(formData: FormData) {
   try {

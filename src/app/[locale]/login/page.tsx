@@ -71,11 +71,11 @@ export default function LoginPage() {
               )}
               <div className="space-y-2">
                 <Label htmlFor="email">{t("email")}</Label>
-                <Input id="email" name="email" type="email" placeholder="admin@test.com" defaultValue="admin@test.com" required className="bg-background/50 border-white/10 focus-visible:ring-primary" />
+                <Input id="email" name="email" type="email" placeholder="email@example.com" required className="bg-background/50 border-white/10 focus-visible:ring-primary" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">{t("password")}</Label>
-                <Input id="password" name="password" type="password" defaultValue="admin" required className="bg-background/50 border-white/10 focus-visible:ring-primary" />
+                <Input id="password" name="password" type="password" required className="bg-background/50 border-white/10 focus-visible:ring-primary" />
               </div>
               <Button type="submit" className="w-full font-medium transition-all hover:scale-[1.02]" disabled={isPending}>
                 {isPending ? "..." : t("submit")}

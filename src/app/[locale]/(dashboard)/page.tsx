@@ -7,14 +7,39 @@ export default async function DashboardPage() {
   const t = await getTranslations('Index')
   const sidebar = await getTranslations('Sidebar')
   
-  let totalItems = 0, activeEmployees = 0, openTickets = 0, itemsInRepair = 0;
-  
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate() - (6 - i))
+    d.setHours(0, 0, 0, 0)
+    return d
+  })
+  const weekStart = last7Days[0]
+
+  // BARCHA so'rovlar bitta parallel blokda — baza uzoq serverda, har ketma-ketlik qimmat
+  let totalItems = 0, activeEmployees = 0, openTickets = 0, itemsInRepair = 0
+  let weekTickets: { createdAt: Date }[] = []
+  let invHistory: any[] = [], ticketHistory: any[] = []
+
   try {
-    [totalItems, activeEmployees, openTickets, itemsInRepair] = await Promise.all([
+    [totalItems, activeEmployees, openTickets, itemsInRepair, weekTickets, invHistory, ticketHistory] = await Promise.all([
       prisma.inventoryItem.count(),
       prisma.user.count({ where: { NOT: { role: 'SUPER_ADMIN' } } }),
       prisma.ticket.count({ where: { status: { in: ['NEW', 'IN_PROGRESS'] } } }),
-      prisma.inventoryItem.count({ where: { status: 'IN_REPAIR' } })
+      prisma.inventoryItem.count({ where: { status: 'IN_REPAIR' } }),
+      prisma.ticket.findMany({
+        where: { createdAt: { gte: weekStart } },
+        select: { createdAt: true }
+      }),
+      prisma.inventoryHistory.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: { item: true }
+      }),
+      prisma.ticketHistory.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: { ticket: true }
+      })
     ])
   } catch (error) {
     console.error("Dashboard stats error:", error)
@@ -27,43 +52,15 @@ export default async function DashboardPage() {
     { title: "Items in Repair", value: itemsInRepair.toString(), icon: AlertCircle, description: "Hardware requiring maintenance" }
   ]
 
-  // Fetch last 7 days ticket counts for chart
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate() - (6 - i))
-    d.setHours(0, 0, 0, 0)
-    return d
-  })
-
-  const chartData = await Promise.all(last7Days.map(async (date) => {
+  // Haftalik grafik: bitta so'rov natijasini JS'da kunlarga taqsimlaymiz
+  const chartData = last7Days.map((date) => {
     const nextDay = new Date(date)
     nextDay.setDate(date.getDate() + 1)
-    const count = await prisma.ticket.count({
-      where: {
-        createdAt: {
-          gte: date,
-          lt: nextDay
-        }
-      }
-    })
+    const count = weekTickets.filter(tk => tk.createdAt >= date && tk.createdAt < nextDay).length
     return { date: date.toLocaleDateString('uz-UZ', { weekday: 'short' }), count }
-  }))
+  })
 
   const maxCount = Math.max(...chartData.map(d => d.count), 1)
-
-  // Fetch recent activity
-  const [invHistory, ticketHistory] = await Promise.all([
-    prisma.inventoryHistory.findMany({
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: { item: true }
-    }),
-    prisma.ticketHistory.findMany({
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: { ticket: true }
-    })
-  ])
 
   const recentActivity = [...invHistory.map(h => ({
     id: h.id,

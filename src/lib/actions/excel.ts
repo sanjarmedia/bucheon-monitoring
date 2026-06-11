@@ -2,15 +2,13 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { cookies } from "next/headers"
+import { auth } from "@/auth"
 import * as xlsx from "xlsx"
 
 export async function importInventoryExcel(formData: FormData) {
-  // Reliable session check via cookies
-  const cookieStore = await cookies()
-  const hasSession = cookieStore.has("authjs.session-token") || cookieStore.has("__Secure-authjs.session-token")
-  
-  if (!hasSession) {
+  const session = await auth()
+  const role = (session?.user as any)?.role
+  if (!session?.user || (role !== 'SUPER_ADMIN' && role !== 'ADMIN')) {
     throw new Error("Unauthorized: Please login first")
   }
 
@@ -30,10 +28,6 @@ export async function importInventoryExcel(formData: FormData) {
   if (!data || data.length === 0) {
     throw new Error("Excel file is empty or unreadable")
   }
-
-  // Log first row to debug column names (visible in server terminal)
-  console.log("Excel first row keys:", Object.keys(data[0]))
-  console.log("Excel first row data:", JSON.stringify(data[0]))
 
   // Get all categories from DB for flexible matching
   const categories = await prisma.category.findMany()
@@ -106,9 +100,33 @@ export async function importInventoryExcel(formData: FormData) {
     )
   }
 
-  // Insert with skipDuplicates to avoid unique constraint errors
+  // Filter out rows whose inventoryNumber already exists (SQLite does not support skipDuplicates)
+  const invNumbers = newItems.map(i => i.inventoryNumber).filter(Boolean) as string[]
+  let itemsToInsert = newItems
+  if (invNumbers.length > 0) {
+    const existing = await prisma.inventoryItem.findMany({
+      where: { inventoryNumber: { in: invNumbers } },
+      select: { inventoryNumber: true }
+    })
+    const existingSet = new Set(existing.map(e => e.inventoryNumber))
+    itemsToInsert = newItems.filter(i => !i.inventoryNumber || !existingSet.has(i.inventoryNumber))
+  }
+
+  // Also drop duplicates inside the file itself
+  const seen = new Set<string>()
+  itemsToInsert = itemsToInsert.filter(i => {
+    if (!i.inventoryNumber) return true
+    if (seen.has(i.inventoryNumber)) return false
+    seen.add(i.inventoryNumber)
+    return true
+  })
+
+  if (itemsToInsert.length === 0) {
+    throw new Error("All rows already exist in the database (duplicate inventory numbers)")
+  }
+
   const result = await prisma.inventoryItem.createMany({
-    data: newItems,
+    data: itemsToInsert,
   })
 
   console.log(`Excel Import SUCCESS: ${result.count} items inserted`)

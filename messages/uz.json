@@ -5,7 +5,9 @@
     "total_items": "Jami jihozlar",
     "active_tickets": "Faol so'rovlar",
     "total_rooms": "Jami xonalar",
-    "recent_activity": "So'nggi harakatlar"
+    "recent_activity": "So'nggi harakatlar",
+    "trends": "Trendlar",
+    "no_activity": "Harakatlar mavjud emas"
   },
   "Sidebar": {
     "dashboard": "Bosh panel",
@@ -37,7 +39,9 @@
     "loading": "Yuklanmoqda...",
     "success": "Muvaffaqiyatli",
     "error": "Xatolik",
-    "logout": "Chiqish"
+    "logout": "Chiqish",
+    "photo": "Rasm",
+    "statistics": "Statistika"
   },
   "Login": {
     "title": "Tizimga kirish",
@@ -171,6 +175,7 @@
     "startDate": "Boshlanish sanasi",
     "endDate": "Tugash sanasi",
     "noLeaves": "Ta'til yozuvlari topilmadi.",
+    "manualCheckIn": "Qo'lda belgilash",
     "status_PRESENT": "Keldi",
     "status_LATE": "Kechikdi",
     "status_ABSENT": "Kelmagan",
@@ -223,6 +228,10 @@
     "staff": "Xodim",
     "date": "Sana",
     "close": "Yopish",
+    "status": "Holat",
+    "searchPlaceholder": "Tavsif yoki ID bo'yicha qidirish...",
+    "allStatus": "Barcha holatlar",
+    "allPriority": "Barcha prioritetlar",
     "completeTicket": "Zayavkani yakunlash",
     "resolutionDesc": "Muammo qanday hal qilingani haqida izoh qoldiring.",
     "resolutionComment": "Yechim izohi",
@@ -235,7 +244,13 @@
     "roleNotice": "Rol faqat Super Admin tomonidan o'zgartirilishi mumkin",
     "newPhoto": "Yangi profil surati",
     "unsaved": "Saqlanmagan o'zgarishlar bor!",
-    "confirmLeave": "Sizda saqlanmagan o'zgarishlar bor. Haqiqatan ham tark etmoqchimisiz?"
+    "confirmLeave": "Sizda saqlanmagan o'zgarishlar bor. Haqiqatan ham tark etmoqchimisiz?",
+    "currentPassword": "Amaldagi parol",
+    "newPassword": "Yangi parol",
+    "confirmPassword": "Yangi parolni tasdiqlang",
+    "updatePassword": "Parolni yangilash",
+    "passwordMismatch": "Parollar mos kelmadi",
+    "passwordSuccess": "Parol muvaffaqiyatli yangilandi"
   },
   "Settings": {
     "title": "Tizim Sozlamalari",
@@ -247,6 +262,7 @@
     "gsDesc": "Inventarizatsiyani avtomatik sinxronizatsiya qilish",
     "gsEnable": "Avto-sinxronlash",
     "cctvTitle": "CCTV / Monitoring",
-    "cctvDesc": "Kuzatuv kameralari server manzili"
+    "cctvDesc": "Kuzatuv kameralari server manzili",
+    "workSchedule": "Ish tartibi"
   }
 }

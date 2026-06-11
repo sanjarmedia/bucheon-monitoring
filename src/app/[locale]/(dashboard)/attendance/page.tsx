@@ -16,31 +16,31 @@ export default async function AttendancePage({ params }: { params: Promise<{ loc
   const empT = await getTranslations('Employees')
   const common = await getTranslations('Common')
   
-  const users = await prisma.user.findMany({ 
-    where: { role: { not: 'SUPER_ADMIN' } },
-    orderBy: { fullName: 'asc' }
-  })
-
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  const todayAttendance = await prisma.dailyAttendance.findMany({
-    where: { date: today },
-    include: { user: true }
-  })
+  // Parallel so'rovlar
+  const [users, todayAttendance, leavesToday] = await Promise.all([
+    prisma.user.findMany({
+      where: { role: { not: 'SUPER_ADMIN' } },
+      orderBy: { fullName: 'asc' }
+    }),
+    prisma.dailyAttendance.findMany({
+      where: { date: today },
+      include: { user: true }
+    }),
+    prisma.leaveRequest.count({
+      where: {
+        status: 'APPROVED',
+        startDate: { lte: today },
+        endDate: { gte: today }
+      }
+    })
+  ])
 
-  const totalEmployees = await prisma.user.count({ where: { role: { not: 'SUPER_ADMIN' } } })
+  const totalEmployees = users.length
   const presentCount = todayAttendance.filter(a => a.status === 'PRESENT' || a.status === 'LATE').length
   const lateCount = todayAttendance.filter(a => a.status === 'LATE').length
-  
-  // Get approved leaves for today
-  const leavesToday = await prisma.leaveRequest.count({
-    where: {
-      status: 'APPROVED',
-      startDate: { lte: today },
-      endDate: { gte: today }
-    }
-  })
 
   const absentCount = Math.max(0, totalEmployees - presentCount - leavesToday)
 

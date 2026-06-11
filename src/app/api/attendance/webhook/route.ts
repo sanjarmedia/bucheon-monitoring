@@ -3,6 +3,16 @@ import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
   try {
+    // Verify shared secret from the turnstile device
+    const secret = process.env.ATTENDANCE_WEBHOOK_SECRET
+    if (!secret) {
+      console.error("ATTENDANCE_WEBHOOK_SECRET is not configured — rejecting webhook")
+      return NextResponse.json({ error: "Webhook not configured" }, { status: 503 })
+    }
+    if (req.headers.get("x-webhook-secret") !== secret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const body = await req.json()
     const { userId, turnstileId } = body
 

@@ -2,8 +2,6 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
 
 import { auth } from "@/auth"
 import bcrypt from "bcryptjs"
@@ -16,7 +14,12 @@ export async function createEmployee(formData: FormData) {
 
   const fullName = formData.get("fullName") as string
   const email = formData.get("email") as string
-  
+  const password = formData.get("password") as string
+
+  if (!password || password.length < 6) {
+    throw new Error("Password is required (min 6 characters)")
+  }
+
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) {
     throw new Error("A user with this email already exists")
@@ -33,12 +36,15 @@ export async function createEmployee(formData: FormData) {
     imageUrl = `data:${image.type};base64,${buffer.toString('base64')}`
   }
 
+  const hashedPassword = await bcrypt.hash(password, 12)
+
   await prisma.user.create({
     data: {
       fullName,
       email,
       role,
-      imageUrl
+      imageUrl,
+      password: hashedPassword
     }
   })
 

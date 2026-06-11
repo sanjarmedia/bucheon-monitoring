@@ -19,8 +19,10 @@ export async function manualCheckIn(formData: FormData) {
     throw new Error("Missing required fields")
   }
 
-  const date = new Date(dateStr)
-  date.setHours(0, 0, 0, 0)
+  // Parse YYYY-MM-DD as LOCAL midnight (new Date("YYYY-MM-DD") would be UTC midnight,
+  // which shifts the day in non-UTC timezones and mismatches the webhook's date logic)
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const date = new Date(year, month - 1, day)
 
   let firstInDate = null
   if (firstIn) {
